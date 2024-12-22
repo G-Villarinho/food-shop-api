@@ -58,6 +58,7 @@ func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID) (*
 		UserID:    userID,
 		SessionID: sessionID,
 		Token:     token,
+		CreatedAt: time.Now().Unix(),
 	}
 
 	ttl := time.Duration(config.Env.Cache.SessionExp) * time.Hour
