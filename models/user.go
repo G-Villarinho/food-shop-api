@@ -3,10 +3,13 @@ package models
 import (
 	"database/sql"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 var (
-	ErrUserNotFound = errors.New("user not found in the database")
+	ErrUserNotFound       = errors.New("user not found in the database")
+	ErrEmailAlreadyExists = errors.New("email already exists in the database")
 )
 
 type Status string
@@ -43,7 +46,11 @@ type UserResponse struct {
 }
 
 func (payload *CreateUserPayload) ToUser() *User {
+	ID, _ := uuid.NewV7()
 	return &User{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
 		FullName: payload.FullName,
 		Email:    payload.Email,
 		XP:       0,

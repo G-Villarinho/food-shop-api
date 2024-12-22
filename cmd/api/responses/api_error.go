@@ -35,3 +35,22 @@ func ForbiddenPermissionAPIErrorResponse(ctx echo.Context) error {
 		Details:    "You do not have permission to perform this action.",
 	})
 }
+
+func CannotBindPayloadAPIErrorResponse(ctx echo.Context) error {
+	errorResponse := ErrorResponse{
+		StatusCode: http.StatusUnprocessableEntity,
+		Title:      "Unable to Process Request",
+		Details:    "We encountered an issue while trying to process your request. The data you provided is not in the expected format.",
+	}
+	return ctx.JSON(http.StatusUnprocessableEntity, errorResponse)
+}
+
+func NewCustomValidationAPIErrorResponse(ctx echo.Context, statusCode int, title, details string) error {
+	errorResponse := ErrorResponse{
+		StatusCode: statusCode,
+		Title:      title,
+		Details:    details,
+	}
+
+	return ctx.JSON(statusCode, errorResponse)
+}
