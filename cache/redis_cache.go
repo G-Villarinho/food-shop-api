@@ -39,6 +39,7 @@ func (r *redisCache) Get(ctx context.Context, key string, target any) error {
 	result, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
+			target = nil
 			return nil
 		}
 
@@ -58,4 +59,34 @@ func (r *redisCache) Exists(ctx context.Context, key string) (bool, error) {
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *redisCache) AddToSet(ctx context.Context, key string, value string, ttl time.Duration) error {
+	pipe := r.client.TxPipeline()
+	pipe.SAdd(ctx, key, value)
+	pipe.Expire(ctx, key, ttl)
+	_, err := pipe.Exec(ctx)
+	return err
+}
+
+func (r *redisCache) GetSetMembers(ctx context.Context, key string, target any) error {
+	members, err := r.client.SMembers(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			target = nil
+			return nil
+		}
+		return err
+	}
+
+	data, err := jsoniter.Marshal(members)
+	if err != nil {
+		return err
+	}
+
+	return jsoniter.Unmarshal(data, target)
+}
+
+func (r *redisCache) RemoveFromSet(ctx context.Context, key string, value string) error {
+	return r.client.SRem(ctx, key, value).Err()
 }

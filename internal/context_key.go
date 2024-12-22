@@ -3,5 +3,6 @@ package internal
 type ContextKey string
 
 const (
-	UserIDKey ContextKey = "user_id"
+	UserIDKey    ContextKey = "user_id"
+	SessionIDKey ContextKey = "session_id"
 )
