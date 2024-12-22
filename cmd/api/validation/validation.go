@@ -11,7 +11,6 @@ type ValidationErrors map[string]string
 func ValidateStruct(s any) ValidationErrors {
 	validate := validator.New()
 
-	// Configura validador com customizações (registradas em custom_validators.go)
 	if err := SetupCustomValidations(validate); err != nil {
 		return ValidationErrors{"validation_setup": "error to set up custom validations"}
 	}

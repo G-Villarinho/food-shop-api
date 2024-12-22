@@ -2,14 +2,18 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user models.User) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error)
 }
 
 type userRepository struct {
@@ -35,4 +39,28 @@ func (u *userRepository) CreateUser(ctx context.Context, user models.User) error
 	}
 
 	return nil
+}
+
+func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user *models.User
+	if err := u.DB.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (u *userRepository) GetUserByID(ctx context.Context, ID uuid.UUID) (*models.User, error) {
+	var user *models.User
+	if err := u.DB.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return user, nil
 }

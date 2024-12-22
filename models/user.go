@@ -1,6 +1,13 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
+
+var (
+	ErrUserNotFound = errors.New("user not found in the database")
+)
 
 type Status string
 

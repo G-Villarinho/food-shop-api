@@ -3,7 +3,7 @@ package responses
 import (
 	"net/http"
 
-	"github.com/G-Villarinho/level-up-api/validation"
+	"github.com/G-Villarinho/level-up-api/cmd/api/validation"
 	"github.com/labstack/echo/v4"
 )
 
