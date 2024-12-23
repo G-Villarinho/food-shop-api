@@ -1,4 +1,4 @@
-package factories
+package email
 
 import (
 	"github.com/G-Villarinho/level-up-api/models"
@@ -9,6 +9,7 @@ type EmailFactory struct{}
 func NewEmailTaskFactory() *EmailFactory {
 	return &EmailFactory{}
 }
+
 func (f *EmailFactory) CreateSignInMagicLinkEmail(to string, name string, magicLink string) models.EmailQueueTask {
 	return models.EmailQueueTask{
 		To:       []string{to},

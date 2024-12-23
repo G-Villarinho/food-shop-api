@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/G-Villarinho/level-up-api/cache"
@@ -11,8 +12,9 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/repositories"
-	"github.com/G-Villarinho/level-up-api/services/factories"
+	"github.com/G-Villarinho/level-up-api/services/email"
 	"github.com/google/uuid"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type AuthService interface {
@@ -22,10 +24,9 @@ type AuthService interface {
 
 type authService struct {
 	di              *internal.Di
-	emailFactory    factories.EmailFactory
+	emailFactory    email.EmailFactory
 	cacheService    cache.CacheService
-	emailService    EmailService
-	tokenService    TokenService
+	queueService    QueueService
 	sessionService  SessionService
 	userRespository repositories.UserRepository
 }
@@ -36,12 +37,7 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 		return nil, err
 	}
 
-	emailService, err := internal.Invoke[EmailService](di)
-	if err != nil {
-		return nil, err
-	}
-
-	tokenService, err := internal.Invoke[TokenService](di)
+	queueService, err := internal.Invoke[QueueService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -58,16 +54,20 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 
 	return &authService{
 		di:              di,
-		emailFactory:    *factories.NewEmailTaskFactory(),
+		emailFactory:    *email.NewEmailTaskFactory(),
 		cacheService:    cacheService,
-		emailService:    emailService,
-		tokenService:    tokenService,
+		queueService:    queueService,
 		sessionService:  sessionService,
 		userRespository: userRepository,
 	}, nil
 }
 
 func (a *authService) SignIn(ctx context.Context, email string) error {
+	log := slog.With(
+		slog.String("service", "auth"),
+		slog.String("func", "SignIn"),
+	)
+
 	user, err := a.userRespository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
@@ -88,7 +88,18 @@ func (a *authService) SignIn(ctx context.Context, email string) error {
 		return fmt.Errorf("set magic link: %w", err)
 	}
 
-	a.emailService.SendEmailAsync(ctx, a.emailFactory.CreateSignInMagicLinkEmail(email, user.FullName, magicLink))
+	go func() {
+		message, err := jsoniter.Marshal(a.emailFactory.CreateSignInMagicLinkEmail(user.Email, user.FullName, magicLink))
+		if err != nil {
+			log.Error("marshal email task", slog.String("error", err.Error()))
+			return
+		}
+
+		if err := a.queueService.Publish(QueueSendEmail, message); err != nil {
+			log.Error("publish email task", slog.String("error", err.Error()))
+			return
+		}
+	}()
 
 	return nil
 }

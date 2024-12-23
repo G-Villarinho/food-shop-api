@@ -15,6 +15,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/repositories"
 	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/level-up-api/services/email"
 	"github.com/G-Villarinho/level-up-api/templates"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
@@ -88,7 +89,7 @@ func main() {
 	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
-	internal.Provide(di, services.NewEmailService)
+	internal.Provide(di, email.NewEmailService)
 	internal.Provide(di, services.NewQueueService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)

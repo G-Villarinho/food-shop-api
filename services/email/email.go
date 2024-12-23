@@ -1,37 +1,28 @@
-package services
+package email
 
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/G-Villarinho/level-up-api/client"
 	"github.com/G-Villarinho/level-up-api/config"
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/templates"
-	jsoniter "github.com/json-iterator/go"
 )
 
 type EmailService interface {
 	SendEmail(ctx context.Context, task models.EmailQueueTask) error
-	SendEmailAsync(ctx context.Context, task models.EmailQueueTask)
 }
 
 type emailService struct {
 	di              *internal.Di
 	emailClient     client.MailtrapClient
-	queueService    QueueService
 	templateService templates.TemplateService
 }
 
 func NewEmailService(di *internal.Di) (EmailService, error) {
 	emailClient, err := internal.Invoke[client.MailtrapClient](di)
-	if err != nil {
-		return nil, err
-	}
-
-	queueService, err := internal.Invoke[QueueService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +35,6 @@ func NewEmailService(di *internal.Di) (EmailService, error) {
 	return &emailService{
 		di:              di,
 		emailClient:     emailClient,
-		queueService:    queueService,
 		templateService: templateService,
 	}, nil
 }
@@ -68,26 +58,6 @@ func (e *emailService) SendEmail(ctx context.Context, task models.EmailQueueTask
 	}
 
 	return nil
-}
-
-func (e *emailService) SendEmailAsync(ctx context.Context, task models.EmailQueueTask) {
-	log := slog.With(
-		slog.String("service", "email"),
-		slog.String("func", "SendEmailAsync"),
-	)
-
-	go func() {
-		message, err := jsoniter.Marshal(task)
-		if err != nil {
-			log.Error("marshal email task", slog.String("error", err.Error()))
-			return
-		}
-
-		if err := e.queueService.Publish(QueueSendEmail, message); err != nil {
-			log.Error("publish email task", slog.String("error", err.Error()))
-			return
-		}
-	}()
 }
 
 func toMailtrapPayload(email models.Email) client.MailtrapPayload {

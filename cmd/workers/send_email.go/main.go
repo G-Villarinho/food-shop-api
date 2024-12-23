@@ -11,6 +11,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/level-up-api/services/email"
 	"github.com/G-Villarinho/level-up-api/templates"
 	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
@@ -54,10 +55,10 @@ func main() {
 
 	internal.Provide(di, client.NewMailtrapClient)
 	internal.Provide(di, services.NewQueueService)
-	internal.Provide(di, services.NewEmailService)
+	internal.Provide(di, email.NewEmailService)
 	internal.Provide(di, templates.NewTemplateService)
 
-	emailService, err := internal.Invoke[services.EmailService](di)
+	emailService, err := internal.Invoke[email.EmailService](di)
 	if err != nil {
 		log.Fatal("error to create like service: ", err)
 	}
