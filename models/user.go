@@ -43,7 +43,7 @@ func (u *User) TableName() string {
 type CreateUserPayload struct {
 	FullName string  `json:"fullName" validate:"required,max=255"`
 	Email    string  `json:"email" validate:"required,email,max=255"`
-	Phone    *string `json:"phone,omitempty" validate:"omitempty,numeric,max=20"`
+	Phone    *string `json:"phone,omitempty" validate:"omitempty,max=20,phone_format"`
 }
 
 type UserResponse struct {

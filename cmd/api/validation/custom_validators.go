@@ -3,6 +3,7 @@ package validation
 import (
 	"mime/multipart"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 const (
 	StrongPasswordTag = "strongpassword"
 	ValidateImagesTag = "validateImages"
+	PhoneFormatTag    = "phone_format"
 	MaxImageSize      = 5 * 1024 * 1024 // 5MB
 )
 
@@ -35,6 +37,10 @@ func SetupCustomValidations(validator *validator.Validate) error {
 	}
 
 	if err := validator.RegisterValidation("iso8601", isISO8601Date); err != nil {
+		return err
+	}
+
+	if err := validator.RegisterValidation(PhoneFormatTag, phoneFormatValidator); err != nil {
 		return err
 	}
 
@@ -83,4 +89,12 @@ func imageFileValidator(fl validator.FieldLevel) bool {
 func isISO8601Date(fl validator.FieldLevel) bool {
 	_, err := time.Parse(iso8601Layout, fl.Field().String())
 	return err == nil
+}
+
+func phoneFormatValidator(fl validator.FieldLevel) bool {
+	phoneRegex := `^\(\d{2}\) \d{5}-\d{4}$`
+	re := regexp.MustCompile(phoneRegex)
+	phone := fl.Field().String()
+
+	return re.MatchString(phone)
 }

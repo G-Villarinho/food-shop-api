@@ -9,4 +9,5 @@ var ValidationMessages = map[string]string{
 	"gt":              "The value must be greater than zero",
 	"datetime":        "Invalid date format",
 	StrongPasswordTag: "Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character",
+	PhoneFormatTag:    "Invalid phone number format: (99) 99999-9999",
 }
