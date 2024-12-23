@@ -24,6 +24,10 @@ func main() {
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Restaurant{},
+		&models.Product{},
+		&models.Order{},
+		&models.OrderItem{},
+		&models.Evaluation{},
 	); err != nil {
 		log.Fatal("error to migrate: ", err)
 	}
