@@ -49,7 +49,7 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 	}
 
 	if user != nil {
-		return models.ErrUserNotFound
+		return models.ErrEmailAlreadyExists
 	}
 
 	if err := u.userRepository.CreateUser(ctx, *payload.ToUser()); err != nil {

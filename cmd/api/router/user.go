@@ -5,6 +5,7 @@ import (
 
 	"github.com/G-Villarinho/level-up-api/cmd/api/handler"
 	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/level-up-api/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,4 +18,5 @@ func setupUserRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/users")
 
 	group.POST("", userHandler.CreateUser)
+	group.GET("/me", userHandler.GetUser, middleware.EnsureAuthenticated(di))
 }
