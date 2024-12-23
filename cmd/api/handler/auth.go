@@ -55,7 +55,7 @@ func (a *authHandler) SignIn(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, err)
 	}
 
-	if err := a.authService.SignIn(ctx.Request().Context(), payload); err != nil {
+	if err := a.authService.SignIn(ctx.Request().Context(), payload.Email); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {

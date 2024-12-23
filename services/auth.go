@@ -15,7 +15,7 @@ import (
 )
 
 type AuthService interface {
-	SignIn(ctx context.Context, payload models.SignInPayload) error
+	SignIn(ctx context.Context, email string) error
 	VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error)
 }
 
@@ -57,8 +57,8 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 	}, nil
 }
 
-func (a *authService) SignIn(ctx context.Context, payload models.SignInPayload) error {
-	user, err := a.userRespository.GetUserByEmail(ctx, payload.Email)
+func (a *authService) SignIn(ctx context.Context, email string) error {
+	user, err := a.userRespository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
