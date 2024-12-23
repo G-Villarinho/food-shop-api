@@ -39,8 +39,7 @@ func (r *redisCache) Get(ctx context.Context, key string, target any) error {
 	result, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			target = nil
-			return nil
+			return ErrCacheMiss
 		}
 
 		return err
@@ -73,8 +72,7 @@ func (r *redisCache) GetSetMembers(ctx context.Context, key string, target any) 
 	members, err := r.client.SMembers(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			target = nil
-			return nil
+			return ErrCacheMiss
 		}
 		return err
 	}

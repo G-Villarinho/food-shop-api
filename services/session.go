@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/G-Villarinho/level-up-api/cache"
@@ -95,6 +96,10 @@ func (s *sessionService) GetSessionByToken(ctx context.Context, token string) (*
 func (s *sessionService) GetSessionsByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Session, error) {
 	var sessionIDs []string
 	if err := s.cacheService.GetSetMembers(ctx, getUserSessionsKey(userID), &sessionIDs); err != nil {
+		if errors.Is(err, cache.ErrCacheMiss) {
+			return nil, models.ErrSessionNotFound
+		}
+
 		return nil, err
 	}
 
@@ -162,6 +167,10 @@ func (s *sessionService) DeleteAllSessions(ctx context.Context, userID uuid.UUID
 func (s *sessionService) getSession(ctx context.Context, sessionID uuid.UUID) (*models.Session, error) {
 	var session *models.Session
 	if err := s.cacheService.Get(ctx, getSessionKey(sessionID), &session); err != nil {
+		if errors.Is(err, cache.ErrCacheMiss) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 

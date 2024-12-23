@@ -3,15 +3,19 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/G-Villarinho/level-up-api/cache"
+	"github.com/G-Villarinho/level-up-api/config"
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/repositories"
+	"github.com/google/uuid"
 )
 
 type UserService interface {
 	CreateUser(ctx context.Context, payload models.CreateUserPayload) error
+	GetUser(ctx context.Context) (*models.UserResponse, error)
 }
 
 type userService struct {
@@ -53,4 +57,43 @@ func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserP
 	}
 
 	return nil
+}
+
+func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error) {
+	userID, ok := ctx.Value(internal.UserIDKey).(uuid.UUID)
+	if !ok {
+		return nil, models.ErrUserNotFoundInContext
+	}
+
+	var userResponse *models.UserResponse
+	err := u.cacheService.Get(ctx, getUserKey(userID), userResponse)
+	if err == nil {
+		return userResponse, nil
+	}
+
+	if err != cache.ErrCacheMiss {
+		return nil, fmt.Errorf("get user from cache: %w", err)
+	}
+
+	user, err := u.userRepository.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user by id: %w", err)
+	}
+
+	if user == nil {
+		return nil, models.ErrUserNotFound
+	}
+
+	userResponse = user.ToUserResponse()
+
+	ttl := time.Duration(config.Env.Cache.CacheExp) * time.Minute
+	if err := u.cacheService.Set(ctx, getUserKey(userID), userResponse, ttl); err != nil {
+		return nil, fmt.Errorf("set user to cache: %w", err)
+	}
+
+	return userResponse, nil
+}
+
+func getUserKey(userID uuid.UUID) string {
+	return fmt.Sprintf("user:%s", userID.String())
 }

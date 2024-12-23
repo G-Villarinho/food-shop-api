@@ -2,8 +2,11 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+var ErrCacheMiss = errors.New("cache miss")
 
 type CacheService interface {
 	Set(ctx context.Context, key string, value any, ttl time.Duration) error

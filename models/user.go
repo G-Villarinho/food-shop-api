@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrUserNotFound       = errors.New("user not found in the database")
-	ErrEmailAlreadyExists = errors.New("email already exists in the database")
+	ErrUserNotFound          = errors.New("user not found in the database")
+	ErrEmailAlreadyExists    = errors.New("email already exists in the database")
+	ErrUserNotFoundInContext = errors.New("user not found in the context")
 )
 
 type Status string
