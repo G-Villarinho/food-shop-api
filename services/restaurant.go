@@ -43,12 +43,7 @@ func (r *restaurantService) CreateRestaurant(ctx context.Context, payload models
 		return err
 	}
 
-	restaurant := models.Restaurant{
-		Name:      payload.RestaurantName,
-		ManagerID: userID,
-	}
-
-	if err := r.restaurantRepository.CreateRestaurant(ctx, restaurant); err != nil {
+	if err := r.restaurantRepository.CreateRestaurant(ctx, *payload.ToRestaurant(userID)); err != nil {
 		return fmt.Errorf("create restaurant: %w", err)
 	}
 
