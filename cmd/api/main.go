@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/G-Villarinho/level-up-api/cache"
+	"github.com/G-Villarinho/level-up-api/client"
 	"github.com/G-Villarinho/level-up-api/cmd/api/handler"
 	"github.com/G-Villarinho/level-up-api/cmd/api/router"
 	"github.com/G-Villarinho/level-up-api/config"
@@ -14,6 +15,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/repositories"
 	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/level-up-api/templates"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -50,6 +52,25 @@ func main() {
 		log.Fatal("error to connect to redis: ", err)
 	}
 
+	rabbitMQClient, err := client.NewRabbitMQClient(di)
+	if err != nil {
+		log.Fatal("error initializing RabbitMQ client: ", err)
+	}
+
+	if err := rabbitMQClient.Connect(); err != nil {
+		log.Fatal("error connecting to RabbitMQ: ", err)
+	}
+
+	defer func() {
+		if err := rabbitMQClient.Disconnect(); err != nil {
+			log.Println("error disconnecting from RabbitMQ:", err)
+		}
+	}()
+
+	internal.Provide(di, func(d *internal.Di) (client.RabbitMQClient, error) {
+		return rabbitMQClient, nil
+	})
+
 	internal.Provide(di, func(d *internal.Di) (*gorm.DB, error) {
 		return db, nil
 	})
@@ -58,12 +79,17 @@ func main() {
 		return redisClient, nil
 	})
 
+	internal.Provide(di, client.NewMailtrapClient)
+
 	internal.Provide(di, handler.NewAuthHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
 	internal.Provide(di, cache.NewRedisCache)
+	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
+	internal.Provide(di, services.NewEmailService)
+	internal.Provide(di, services.NewQueueService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)

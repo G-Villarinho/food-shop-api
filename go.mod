@@ -39,6 +39,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/labstack/echo/v4 v4.13.3
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/samber/do v1.6.0
 	golang.org/x/text v0.21.0 // indirect
 	gorm.io/driver/mysql v1.5.7

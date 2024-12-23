@@ -11,6 +11,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/repositories"
+	"github.com/G-Villarinho/level-up-api/services/factories"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +22,9 @@ type AuthService interface {
 
 type authService struct {
 	di              *internal.Di
-	cache           cache.CacheService
+	emailFactory    factories.EmailFactory
+	cacheService    cache.CacheService
+	emailService    EmailService
 	tokenService    TokenService
 	sessionService  SessionService
 	userRespository repositories.UserRepository
@@ -29,6 +32,11 @@ type authService struct {
 
 func NewAuthService(di *internal.Di) (AuthService, error) {
 	cacheService, err := internal.Invoke[cache.CacheService](di)
+	if err != nil {
+		return nil, err
+	}
+
+	emailService, err := internal.Invoke[EmailService](di)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +58,9 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 
 	return &authService{
 		di:              di,
-		cache:           cacheService,
+		emailFactory:    *factories.NewEmailTaskFactory(),
+		cacheService:    cacheService,
+		emailService:    emailService,
 		tokenService:    tokenService,
 		sessionService:  sessionService,
 		userRespository: userRepository,
@@ -73,18 +83,19 @@ func (a *authService) SignIn(ctx context.Context, email string) error {
 	}
 
 	magicLink := fmt.Sprintf("%s/auth/link?code=%s&redirect=%s", config.Env.APIBaseURL, code.String(), config.Env.RedirectURL)
-	fmt.Println(magicLink)
 
-	if err := a.cache.Set(ctx, getMagicLinkKey(code), user.ID.String(), 15*time.Minute); err != nil {
+	if err := a.cacheService.Set(ctx, getMagicLinkKey(code), user.ID.String(), 15*time.Minute); err != nil {
 		return fmt.Errorf("set magic link: %w", err)
 	}
+
+	a.emailService.SendEmailAsync(ctx, a.emailFactory.CreateSignInMagicLinkEmail(email, user.FullName, magicLink))
 
 	return nil
 }
 
 func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error) {
 	var userID uuid.UUID
-	if err := a.cache.Get(ctx, getMagicLinkKey(code), &userID); err != nil {
+	if err := a.cacheService.Get(ctx, getMagicLinkKey(code), &userID); err != nil {
 		if errors.Is(err, cache.ErrCacheMiss) {
 			return "", models.ErrMagicLinkNotFound
 		}
@@ -100,7 +111,7 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 		return "", models.ErrUserNotFound
 	}
 
-	if err := a.cache.Delete(ctx, getMagicLinkKey(code)); err != nil {
+	if err := a.cacheService.Delete(ctx, getMagicLinkKey(code)); err != nil {
 		return "", fmt.Errorf("delete magic link: %w", err)
 	}
 
