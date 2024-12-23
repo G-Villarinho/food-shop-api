@@ -23,6 +23,7 @@ func main() {
 
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.Restaurant{},
 	); err != nil {
 		log.Fatal("error to migrate: ", err)
 	}

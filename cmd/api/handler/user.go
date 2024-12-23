@@ -53,7 +53,7 @@ func (u *userHandler) CreateUser(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, err)
 	}
 
-	if err := u.userService.CreateUser(ctx.Request().Context(), payload); err != nil {
+	if _, err := u.userService.CreateUser(ctx.Request().Context(), payload, models.Customer); err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrEmailAlreadyExists) {

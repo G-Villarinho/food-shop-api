@@ -14,19 +14,26 @@ var (
 )
 
 type Status string
+type Role string
 
 const (
-	Active  Status = "Active"
-	Blocked Status = "Blocked"
+	Active  Status = "active"
+	Blocked Status = "blocked"
+)
+
+const (
+	Manager  Role = "manager"
+	Customer Role = "customer"
 )
 
 type User struct {
 	BaseModel
 	FullName string         `gorm:"column:FullName;type:varchar(255);not null"`
 	Email    string         `gorm:"column:Email;type:varchar(255);not null;unique"`
-	Status   Status         `gorm:"column:Status;type:enum('Active', 'Blocked');not null;default:'Active'"`
+	Status   Status         `gorm:"column:Status;type:enum('active', 'blocked');not null;default:'active'"`
+	Role     Role           `gorm:"column:Role;type:enum('manager', 'customer');not null;default:'customer';index"`
+	Phone    sql.NullString `gorm:"column:Phone;type:varchar(20)"`
 	Avatar   sql.NullString `gorm:"column:Avatar;type:varchar(255)"`
-	XP       int            `gorm:"column:XP;type:int;not null;default:0"`
 }
 
 func (u *User) TableName() string {
@@ -34,8 +41,9 @@ func (u *User) TableName() string {
 }
 
 type CreateUserPayload struct {
-	FullName string `json:"fullName" validate:"required,max=255"`
-	Email    string `json:"email" validate:"required,email,max=255"`
+	FullName string  `json:"fullName" validate:"required,max=255"`
+	Email    string  `json:"email" validate:"required,email,max=255"`
+	Phone    *string `json:"phone,omitempty" validate:"omitempty,numeric,max=20"`
 }
 
 type UserResponse struct {
@@ -43,10 +51,9 @@ type UserResponse struct {
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
 	Avatar   string `json:"avatar,omitempty"`
-	XP       int    `json:"xp"`
 }
 
-func (payload *CreateUserPayload) ToUser() *User {
+func (payload *CreateUserPayload) ToUser(Role Role) *User {
 	ID, _ := uuid.NewV7()
 	return &User{
 		BaseModel: BaseModel{
@@ -54,7 +61,8 @@ func (payload *CreateUserPayload) ToUser() *User {
 		},
 		FullName: payload.FullName,
 		Email:    payload.Email,
-		XP:       0,
+		Role:     Role,
+		Phone:    sql.NullString{String: *payload.Phone, Valid: payload.Phone != nil},
 	}
 }
 
@@ -64,6 +72,5 @@ func (user *User) ToUserResponse() *UserResponse {
 		FullName: user.FullName,
 		Email:    user.Email,
 		Avatar:   user.Avatar.String,
-		XP:       user.XP,
 	}
 }

@@ -8,4 +8,5 @@ import (
 func SetupRoutes(e *echo.Echo, di *internal.Di) {
 	setupUserRoutes(e, di)
 	setupAuthRoutes(e, di)
+	setupRestaurantRoutes(e, di)
 }

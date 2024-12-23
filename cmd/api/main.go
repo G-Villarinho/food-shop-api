@@ -83,18 +83,21 @@ func main() {
 	internal.Provide(di, client.NewMailtrapClient)
 
 	internal.Provide(di, handler.NewAuthHandler)
+	internal.Provide(di, handler.NewRestaurantHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
 	internal.Provide(di, cache.NewRedisCache)
+	internal.Provide(di, email.NewEmailService)
 	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
-	internal.Provide(di, email.NewEmailService)
 	internal.Provide(di, services.NewQueueService)
+	internal.Provide(di, services.NewRestaurantService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
 
+	internal.Provide(di, repositories.NewRestaurantRepository)
 	internal.Provide(di, repositories.NewUserRepository)
 
 	router.SetupRoutes(e, di)

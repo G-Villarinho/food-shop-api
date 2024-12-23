@@ -14,7 +14,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, payload models.CreateUserPayload) error
+	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) (uuid.UUID, error)
 	GetUser(ctx context.Context) (*models.UserResponse, error)
 }
 
@@ -49,25 +49,26 @@ func NewUserService(di *internal.Di) (UserService, error) {
 	}, nil
 }
 
-func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload) error {
+func (u *userService) CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) (uuid.UUID, error) {
 	user, err := u.userRepository.GetUserByEmail(ctx, payload.Email)
 	if err != nil {
-		return fmt.Errorf("get user by email: %w", err)
+		return uuid.Nil, fmt.Errorf("get user by email: %w", err)
 	}
 
 	if user != nil {
-		return models.ErrEmailAlreadyExists
+		return uuid.Nil, models.ErrEmailAlreadyExists
 	}
 
-	if err := u.userRepository.CreateUser(ctx, *payload.ToUser()); err != nil {
-		return fmt.Errorf("create user: %w", err)
+	user = payload.ToUser(role)
+	if err := u.userRepository.CreateUser(ctx, *user); err != nil {
+		return uuid.Nil, fmt.Errorf("create user: %w", err)
 	}
 
 	if err := u.authService.SignIn(ctx, payload.Email); err != nil {
-		return fmt.Errorf("sign in: %w", err)
+		return uuid.Nil, fmt.Errorf("sign in: %w", err)
 	}
 
-	return nil
+	return user.ID, nil
 }
 
 func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error) {
