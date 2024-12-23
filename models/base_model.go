@@ -16,7 +16,6 @@ type BaseModel struct {
 }
 
 func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
-	b.ID = uuid.New()
 	b.CreatedAt = time.Now().UTC()
 	return
 }

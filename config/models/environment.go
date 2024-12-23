@@ -9,6 +9,8 @@ type Environment struct {
 	CloudFlare       CloudFlareEnvironment
 	Cache            CacheEnvironment
 	Email            EmailEnvironment
+	APIBaseURL       string `env:"API_BASE_URL"`
+	RedirectURL      string `env:"REDIRECT_URL"`
 	CookieName       string `env:"COOKIE_NAME"`
 	RabbitMQURL      string `env:"RABBITMQ_URL"`
 	APIPort          int    `env:"API_PORT"`

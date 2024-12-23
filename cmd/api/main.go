@@ -27,6 +27,10 @@ func main() {
 	e := echo.New()
 	di := internal.NewDi()
 
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: `[${time_rfc3339}] ${method} ${uri} ${status} ${latency_human} ${bytes_in} bytes_in ${bytes_out} bytes_out` + "\n",
+	}))
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{config.Env.FrontURL},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
@@ -54,10 +58,12 @@ func main() {
 		return redisClient, nil
 	})
 
+	internal.Provide(di, handler.NewAuthHandler)
 	internal.Provide(di, handler.NewUserHandler)
 
 	internal.Provide(di, cache.NewRedisCache)
 
+	internal.Provide(di, services.NewAuthService)
 	internal.Provide(di, services.NewSessionService)
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
