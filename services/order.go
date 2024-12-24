@@ -12,6 +12,7 @@ import (
 
 type OrderService interface {
 	CreateOrder(ctx context.Context, payload models.CreateOrderPayload) error
+	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.OrderResponse], error)
 }
 
 type orderService struct {
@@ -88,4 +89,30 @@ func (o *orderService) CreateOrder(ctx context.Context, payload models.CreateOrd
 	}
 
 	return nil
+}
+
+func (o *orderService) GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.OrderResponse], error) {
+	restaurant, err := o.restaurantRepository.GetRestaurantByID(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("get restaurant by ID: %w", err)
+	}
+
+	if restaurant == nil {
+		return nil, models.ErrRestaurantNotFound
+	}
+
+	paginatedOrders, err := o.orderRepository.GetPaginatedOrdersByRestaurantID(ctx, restaurantID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated orders by restaurant ID: %w", err)
+	}
+
+	if paginatedOrders == nil {
+		return nil, nil
+	}
+
+	paginatedOrdersResponse := models.MapPaginatedResult(paginatedOrders, func(order models.Order) *models.OrderResponse {
+		return order.ToOrderResponse()
+	})
+
+	return paginatedOrdersResponse, nil
 }

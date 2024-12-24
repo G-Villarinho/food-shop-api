@@ -18,4 +18,5 @@ func setupOrderRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/orders", middleware.EnsureAuthenticated(di))
 
 	group.POST("", orderHandler.CreateOrder)
+	group.GET("/:restaurantID", orderHandler.GetOrders)
 }

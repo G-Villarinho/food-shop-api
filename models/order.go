@@ -31,6 +31,14 @@ type CreateOrderPayload struct {
 	Items        []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
 }
 
+type OrderResponse struct {
+	ID            uuid.UUID   `json:"id"`
+	CustommerName string      `json:"custommerName"`
+	Status        OrderStatus `json:"status"`
+	TotalInCents  int         `json:"totalInCents"`
+	CreatedAt     string      `json:"createdAt"`
+}
+
 func NewOrder(custommerID, restaurantID uuid.UUID, totalInCents int) *Order {
 	ID, _ := uuid.NewUUID()
 	return &Order{
@@ -40,5 +48,15 @@ func NewOrder(custommerID, restaurantID uuid.UUID, totalInCents int) *Order {
 		CustommerID:  custommerID,
 		RestaurantID: restaurantID,
 		TotalInCents: totalInCents,
+	}
+}
+
+func (o *Order) ToOrderResponse() *OrderResponse {
+	return &OrderResponse{
+		ID:            o.ID,
+		CustommerName: o.Custommer.FullName,
+		Status:        o.Status,
+		TotalInCents:  o.TotalInCents,
+		CreatedAt:     o.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
