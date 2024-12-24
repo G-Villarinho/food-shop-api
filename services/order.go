@@ -11,7 +11,7 @@ import (
 )
 
 type OrderService interface {
-	CreateOrder(ctx context.Context, payload models.CreateOrderPayload) error
+	CreateOrder(ctx context.Context, custommerID, restaurantID uuid.UUID, payload models.CreateOrderPayload) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[*models.OrderResponse], error)
 }
 
@@ -53,21 +53,7 @@ func NewOrderService(di *internal.Di) (OrderService, error) {
 	}, nil
 }
 
-func (o *orderService) CreateOrder(ctx context.Context, payload models.CreateOrderPayload) error {
-	custommerID, ok := ctx.Value(internal.UserIDKey).(uuid.UUID)
-	if !ok {
-		return models.ErrUserNotFoundInContext
-	}
-
-	restaurant, err := o.restaurantRepository.GetRestaurantByID(ctx, payload.RestaurantID)
-	if err != nil {
-		return fmt.Errorf("get restaurant by ID: %w", err)
-	}
-
-	if restaurant == nil {
-		return models.ErrRestaurantNotFound
-	}
-
+func (o *orderService) CreateOrder(ctx context.Context, custommerID, restaurantID uuid.UUID, payload models.CreateOrderPayload) error {
 	var productsIDs []uuid.UUID
 	for _, item := range payload.Items {
 		productsIDs = append(productsIDs, item.ProductID)
