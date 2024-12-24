@@ -6,6 +6,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/cmd/api/handler"
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/middleware"
+	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,5 +18,5 @@ func setupOrderRoutes(e *echo.Echo, di *internal.Di) {
 
 	group := e.Group("/v1/orders", middleware.EnsureAuthenticated(di))
 
-	group.GET("/:restaurantID", orderHandler.GetOrders)
+	group.GET("", orderHandler.GetOrders, middleware.EnsurePermission(models.ListOrdersPermission))
 }

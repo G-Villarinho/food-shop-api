@@ -9,7 +9,6 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -46,13 +45,7 @@ func (o *orderHandler) GetOrders(ctx echo.Context) error {
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusUnprocessableEntity, "conflict", "Invalid pagination parameters")
 	}
 
-	restaurantID, err := uuid.Parse(ctx.Param("restaurantID"))
-	if err != nil {
-		log.Warn("Error to parse restaurantID", slog.String("error", err.Error()))
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusUnprocessableEntity, "conflict", "Invalid restaurant ID parameter")
-	}
-
-	response, err := o.orderService.GetPaginatedOrdersByRestaurantID(ctx.Request().Context(), restaurantID, pagination)
+	response, err := o.orderService.GetPaginatedOrdersByRestaurantID(ctx.Request().Context(), pagination)
 	if err != nil {
 		log.Error(err.Error())
 
