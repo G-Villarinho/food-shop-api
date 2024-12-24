@@ -94,7 +94,15 @@ func (r *restaurantHandler) CreateOrder(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrRestaurantNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurant not found.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurant not found")
+		}
+
+		if errors.Is(err, models.ErrSomeProductsNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "bad_request", "Some products not found")
+		}
+
+		if errors.Is(err, models.ErrUserNotFoundInContext) {
+			return responses.AccessDeniedAPIErrorResponse(ctx)
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
