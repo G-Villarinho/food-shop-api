@@ -85,6 +85,11 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "Redirect URL is required.")
 	}
 
+	if redirectURL != config.Env.RedirectURL {
+		log.Warn("Redirect URL is invalid")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "Redirect URL is invalid.")
+	}
+
 	token, err := a.authService.VeryfyMagicLink(ctx.Request().Context(), code)
 	if err != nil {
 		log.Error(err.Error())

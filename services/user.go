@@ -77,10 +77,10 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 		return nil, models.ErrUserNotFoundInContext
 	}
 
-	var userResponse *models.UserResponse
-	err := u.cacheService.Get(ctx, getUserKey(userID), userResponse)
+	var userResponse models.UserResponse
+	err := u.cacheService.Get(ctx, getUserKey(userID), &userResponse)
 	if err == nil {
-		return userResponse, nil
+		return &userResponse, nil
 	}
 
 	if err != cache.ErrCacheMiss {
@@ -96,14 +96,14 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 		return nil, models.ErrUserNotFound
 	}
 
-	userResponse = user.ToUserResponse()
+	userResponse = *user.ToUserResponse()
 
 	ttl := time.Duration(config.Env.Cache.CacheExp) * time.Minute
 	if err := u.cacheService.Set(ctx, getUserKey(userID), userResponse, ttl); err != nil {
 		return nil, fmt.Errorf("set user to cache: %w", err)
 	}
 
-	return userResponse, nil
+	return &userResponse, nil
 }
 
 func getUserKey(userID uuid.UUID) string {

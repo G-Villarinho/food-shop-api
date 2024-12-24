@@ -97,6 +97,8 @@ func main() {
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
 
+	internal.Provide(di, repositories.NewOrderRepository)
+	internal.Provide(di, repositories.NewProductRepository)
 	internal.Provide(di, repositories.NewRestaurantRepository)
 	internal.Provide(di, repositories.NewUserRepository)
 

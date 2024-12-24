@@ -2,8 +2,14 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrProductNotFound      = errors.New("product not found in the database")
+	ErrSomeProductsNotFound = errors.New("some products not found for this restaurant")
 )
 
 type Product struct {

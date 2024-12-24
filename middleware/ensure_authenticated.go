@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/G-Villarinho/level-up-api/cmd/api/responses"
+	"github.com/G-Villarinho/level-up-api/config"
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
@@ -21,13 +22,23 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 				return responses.InternalServerAPIErrorResponse(ctx)
 			}
 
-			authHeader := ctx.Request().Header.Get("Authorization")
+			cookie, err := ctx.Cookie(config.Env.CookieName)
+			if err != nil {
+				slog.Error(err.Error())
 
-			if authHeader == "" || len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+				if errors.Is(err, echo.ErrCookieNotFound) {
+					return responses.AccessDeniedAPIErrorResponse(ctx)
+				}
+
 				return responses.AccessDeniedAPIErrorResponse(ctx)
 			}
 
-			response, err := sessionService.GetSessionByToken(ctx.Request().Context(), authHeader[7:])
+			authToken := cookie.Value
+			if authToken == "" {
+				return responses.AccessDeniedAPIErrorResponse(ctx)
+			}
+
+			response, err := sessionService.GetSessionByToken(ctx.Request().Context(), authToken)
 			if err != nil {
 				slog.Error(err.Error())
 

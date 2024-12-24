@@ -2,14 +2,17 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type RestaurantRepository interface {
 	CreateRestaurant(ctx context.Context, restaurant models.Restaurant) error
+	GetRestaurantByID(ctx context.Context, ID uuid.UUID) (*models.Restaurant, error)
 }
 
 type restaurantRepository struct {
@@ -35,4 +38,16 @@ func (r *restaurantRepository) CreateRestaurant(ctx context.Context, restaurant 
 	}
 
 	return nil
+}
+
+func (r *restaurantRepository) GetRestaurantByID(ctx context.Context, ID uuid.UUID) (*models.Restaurant, error) {
+	var restaurant models.Restaurant
+	if err := r.DB.Where("ID = ?", ID).First(&restaurant).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &restaurant, nil
 }

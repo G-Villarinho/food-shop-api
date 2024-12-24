@@ -25,3 +25,20 @@ type Order struct {
 func (o *Order) TableName() string {
 	return "Order"
 }
+
+type CreateOrderPayload struct {
+	RestaurantID uuid.UUID                `json:"restaurantId" validate:"required"`
+	Items        []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
+}
+
+func NewOrder(custommerID, restaurantID uuid.UUID, totalInCents int) *Order {
+	ID, _ := uuid.NewUUID()
+	return &Order{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
+		CustommerID:  custommerID,
+		RestaurantID: restaurantID,
+		TotalInCents: totalInCents,
+	}
+}

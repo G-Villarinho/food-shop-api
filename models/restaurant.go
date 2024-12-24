@@ -2,8 +2,13 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrRestaurantNotFound = errors.New("restaurant not found in the database")
 )
 
 type Restaurant struct {
