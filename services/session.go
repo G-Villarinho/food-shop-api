@@ -13,7 +13,7 @@ import (
 )
 
 type SessionService interface {
-	CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID) (*models.Session, error)
+	CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID, role models.Role) (*models.Session, error)
 	GetSessionByToken(ctx context.Context, token string) (*models.Session, error)
 	GetSessionsByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Session, error)
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
@@ -44,13 +44,13 @@ func NewSessionService(di *internal.Di) (SessionService, error) {
 	}, nil
 }
 
-func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID) (*models.Session, error) {
+func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID, role models.Role) (*models.Session, error) {
 	sessionID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := s.tokenService.CreateToken(userID, sessionID, restaurantID)
+	token, err := s.tokenService.CreateToken(userID, sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +59,7 @@ func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID, re
 		UserID:       userID,
 		SessionID:    sessionID,
 		RestaurantID: restaurantID,
+		Role:         role,
 		Token:        token,
 		CreatedAt:    time.Now().Unix(),
 	}

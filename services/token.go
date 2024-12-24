@@ -10,7 +10,7 @@ import (
 )
 
 type TokenService interface {
-	CreateToken(userID uuid.UUID, sessionID uuid.UUID, restaurantID *uuid.UUID) (string, error)
+	CreateToken(userID uuid.UUID, sessionID uuid.UUID) (string, error)
 	ExtractSessionID(token string) (uuid.UUID, error)
 }
 
@@ -22,17 +22,13 @@ func NewTokenService(di *internal.Di) (TokenService, error) {
 	return &tokenService{di: di}, nil
 }
 
-func (t *tokenService) CreateToken(userID uuid.UUID, sessionID uuid.UUID, restaurantID *uuid.UUID) (string, error) {
+func (t *tokenService) CreateToken(userID uuid.UUID, sessionID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
 		"userId": userID.String(),
 		"exp":    time.Now().Add(time.Duration(config.Env.Cache.SessionExp) * time.Hour).Unix(),
 		"sid":    sessionID.String(),
 		"iat":    time.Now().Unix(),
 		"iss":    "level-up.com",
-	}
-
-	if restaurantID != nil {
-		claims["rid"] = restaurantID.String()
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)

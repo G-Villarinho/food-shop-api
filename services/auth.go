@@ -141,7 +141,7 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 		}
 	}
 
-	session, err := a.sessionService.CreateSession(ctx, user.ID, restaurantID)
+	session, err := a.sessionService.CreateSession(ctx, user.ID, restaurantID, user.Role)
 	if err != nil {
 		return "", fmt.Errorf("create session: %w", err)
 	}
