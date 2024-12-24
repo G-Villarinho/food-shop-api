@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
@@ -54,17 +55,22 @@ func (r *restaurantRepository) GetRestaurantByID(ctx context.Context, ID uuid.UU
 }
 
 func (r *restaurantRepository) GetRestaurantIDByUserID(ctx context.Context, userID uuid.UUID) (*uuid.UUID, error) {
-	var restaurantID uuid.UUID
+	var restaurantIDStr string
 	if err := r.DB.
 		WithContext(ctx).
 		Table("Restaurant").
 		Select("Id").
 		Where("ManagerID = ?", userID).
-		Scan(&restaurantID).Error; err != nil {
+		Scan(&restaurantIDStr).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
+	}
+
+	restaurantID, err := uuid.Parse(restaurantIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("error to parse restaurant ID: %w", err)
 	}
 	return &restaurantID, nil
 }

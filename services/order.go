@@ -78,12 +78,12 @@ func (o *orderService) CreateOrder(ctx context.Context, custommerID, restaurantI
 }
 
 func (o *orderService) GetPaginatedOrdersByRestaurantID(ctx context.Context, pagination *models.Pagination) (*models.PaginatedResponse[*models.OrderResponse], error) {
-	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(uuid.UUID)
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
 	if !ok {
 		return nil, models.ErrRestaurantNotFound
 	}
 
-	restaurant, err := o.restaurantRepository.GetRestaurantByID(ctx, restaurantID)
+	restaurant, err := o.restaurantRepository.GetRestaurantByID(ctx, *restaurantID)
 	if err != nil {
 		return nil, fmt.Errorf("get restaurant by ID: %w", err)
 	}
@@ -92,7 +92,7 @@ func (o *orderService) GetPaginatedOrdersByRestaurantID(ctx context.Context, pag
 		return nil, models.ErrRestaurantNotFound
 	}
 
-	paginatedOrders, err := o.orderRepository.GetPaginatedOrdersByRestaurantID(ctx, restaurantID, pagination)
+	paginatedOrders, err := o.orderRepository.GetPaginatedOrdersByRestaurantID(ctx, *restaurantID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("get paginated orders by restaurant ID: %w", err)
 	}
