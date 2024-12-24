@@ -23,12 +23,13 @@ type AuthService interface {
 }
 
 type authService struct {
-	di              *internal.Di
-	emailFactory    email.EmailFactory
-	cacheService    cache.CacheService
-	queueService    QueueService
-	sessionService  SessionService
-	userRespository repositories.UserRepository
+	di                   *internal.Di
+	emailFactory         email.EmailFactory
+	cacheService         cache.CacheService
+	queueService         QueueService
+	sessionService       SessionService
+	restaurantRepository repositories.RestaurantRepository
+	userRespository      repositories.UserRepository
 }
 
 func NewAuthService(di *internal.Di) (AuthService, error) {
@@ -47,18 +48,24 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 		return nil, err
 	}
 
+	restaurantRepository, err := internal.Invoke[repositories.RestaurantRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
 	userRepository, err := internal.Invoke[repositories.UserRepository](di)
 	if err != nil {
 		return nil, err
 	}
 
 	return &authService{
-		di:              di,
-		emailFactory:    *email.NewEmailTaskFactory(),
-		cacheService:    cacheService,
-		queueService:    queueService,
-		sessionService:  sessionService,
-		userRespository: userRepository,
+		di:                   di,
+		emailFactory:         *email.NewEmailTaskFactory(),
+		cacheService:         cacheService,
+		queueService:         queueService,
+		sessionService:       sessionService,
+		restaurantRepository: restaurantRepository,
+		userRespository:      userRepository,
 	}, nil
 }
 
@@ -126,7 +133,15 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 		return "", fmt.Errorf("delete magic link: %w", err)
 	}
 
-	session, err := a.sessionService.CreateSession(ctx, user.ID)
+	var restaurantID *uuid.UUID
+	if user.Role == models.Manager {
+		restaurantID, err = a.restaurantRepository.GetRestaurantIDByUserID(ctx, user.ID)
+		if err != nil {
+			return "", fmt.Errorf("get restaurant id by user id: %w", err)
+		}
+	}
+
+	session, err := a.sessionService.CreateSession(ctx, user.ID, restaurantID)
 	if err != nil {
 		return "", fmt.Errorf("create session: %w", err)
 	}

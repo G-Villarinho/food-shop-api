@@ -13,7 +13,7 @@ import (
 )
 
 type SessionService interface {
-	CreateSession(ctx context.Context, userID uuid.UUID) (*models.Session, error)
+	CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID) (*models.Session, error)
 	GetSessionByToken(ctx context.Context, token string) (*models.Session, error)
 	GetSessionsByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Session, error)
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
@@ -44,22 +44,23 @@ func NewSessionService(di *internal.Di) (SessionService, error) {
 	}, nil
 }
 
-func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID) (*models.Session, error) {
+func (s *sessionService) CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID) (*models.Session, error) {
 	sessionID, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := s.tokenService.CreateToken(userID, sessionID)
+	token, err := s.tokenService.CreateToken(userID, sessionID, restaurantID)
 	if err != nil {
 		return nil, err
 	}
 
 	session := &models.Session{
-		UserID:    userID,
-		SessionID: sessionID,
-		Token:     token,
-		CreatedAt: time.Now().Unix(),
+		UserID:       userID,
+		SessionID:    sessionID,
+		RestaurantID: restaurantID,
+		Token:        token,
+		CreatedAt:    time.Now().Unix(),
 	}
 
 	ttl := time.Duration(config.Env.Cache.SessionExp) * time.Hour

@@ -51,6 +51,11 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 
 			ctx.SetRequest(ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), internal.UserIDKey, response.UserID)))
 			ctx.SetRequest(ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), internal.SessionIDKey, response.SessionID)))
+
+			if response.Role == models.Manager {
+				ctx.SetRequest(ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), internal.RestaurantIDKey, response.RestaurantID)))
+			}
+
 			return next(ctx)
 		}
 	}
