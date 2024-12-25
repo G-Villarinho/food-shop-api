@@ -47,10 +47,11 @@ type CreateUserPayload struct {
 }
 
 type UserResponse struct {
-	ID       string `json:"id"`
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Avatar   string `json:"avatar,omitempty"`
+	ID             string `json:"id"`
+	FullName       string `json:"full_name"`
+	Email          string `json:"email"`
+	RestaurantName string `json:"restaurantName,omitempty"`
+	Avatar         string `json:"avatar,omitempty"`
 }
 
 func (payload *CreateUserPayload) ToUser(Role Role) *User {

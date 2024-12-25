@@ -15,6 +15,7 @@ type RestaurantRepository interface {
 	CreateRestaurant(ctx context.Context, restaurant models.Restaurant) error
 	GetRestaurantByID(ctx context.Context, ID uuid.UUID) (*models.Restaurant, error)
 	GetRestaurantIDByUserID(ctx context.Context, userID uuid.UUID) (*uuid.UUID, error)
+	GetRestaurantByUserID(ctx context.Context, userID uuid.UUID) (*models.Restaurant, error)
 }
 
 type restaurantRepository struct {
@@ -73,4 +74,19 @@ func (r *restaurantRepository) GetRestaurantIDByUserID(ctx context.Context, user
 		return nil, fmt.Errorf("error to parse restaurant ID: %w", err)
 	}
 	return &restaurantID, nil
+}
+
+func (r *restaurantRepository) GetRestaurantByUserID(ctx context.Context, userID uuid.UUID) (*models.Restaurant, error) {
+	var restaurant models.Restaurant
+	if err := r.DB.
+		WithContext(ctx).
+		Where("ManagerID = ?", userID).
+		First(&restaurant).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &restaurant, nil
 }

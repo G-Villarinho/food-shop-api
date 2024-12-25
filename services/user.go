@@ -19,10 +19,11 @@ type UserService interface {
 }
 
 type userService struct {
-	di             *internal.Di
-	authService    AuthService
-	cacheService   cache.CacheService
-	userRepository repositories.UserRepository
+	di                   *internal.Di
+	authService          AuthService
+	cacheService         cache.CacheService
+	restaurantRepository repositories.RestaurantRepository
+	userRepository       repositories.UserRepository
 }
 
 func NewUserService(di *internal.Di) (UserService, error) {
@@ -36,16 +37,22 @@ func NewUserService(di *internal.Di) (UserService, error) {
 		return nil, err
 	}
 
+	restaurantRepository, err := internal.Invoke[repositories.RestaurantRepository](di)
+	if err != nil {
+		return nil, err
+	}
+
 	userRepository, err := internal.Invoke[repositories.UserRepository](di)
 	if err != nil {
 		return nil, err
 	}
 
 	return &userService{
-		di:             di,
-		authService:    authService,
-		cacheService:   cacheService,
-		userRepository: userRepository,
+		di:                   di,
+		authService:          authService,
+		cacheService:         cacheService,
+		restaurantRepository: restaurantRepository,
+		userRepository:       userRepository,
 	}, nil
 }
 
@@ -97,6 +104,17 @@ func (u *userService) GetUser(ctx context.Context) (*models.UserResponse, error)
 	}
 
 	userResponse = *user.ToUserResponse()
+
+	if user.Role == models.Manager {
+		restaurant, err := u.restaurantRepository.GetRestaurantByUserID(ctx, user.ID)
+		if err != nil {
+			return nil, fmt.Errorf("get restaurant id by user id: %w", err)
+		}
+
+		if restaurant != nil {
+			userResponse.RestaurantName = restaurant.Name
+		}
+	}
 
 	ttl := time.Duration(config.Env.Cache.CacheExp) * time.Minute
 	if err := u.cacheService.Set(ctx, getUserKey(userID), userResponse, ttl); err != nil {
