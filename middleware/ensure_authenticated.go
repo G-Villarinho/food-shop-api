@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net/http"
 
 	"github.com/G-Villarinho/level-up-api/cmd/api/responses"
 	"github.com/G-Villarinho/level-up-api/config"
@@ -22,19 +23,10 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 				return responses.InternalServerAPIErrorResponse(ctx)
 			}
 
-			cookie, err := ctx.Cookie(config.Env.CookieName)
+			authToken, err := getAuthToken(ctx)
 			if err != nil {
 				slog.Error(err.Error())
-
-				if errors.Is(err, echo.ErrCookieNotFound) {
-					return responses.AccessDeniedAPIErrorResponse(ctx)
-				}
-
-				return responses.AccessDeniedAPIErrorResponse(ctx)
-			}
-
-			authToken := cookie.Value
-			if authToken == "" {
+				clearAuthToken(ctx)
 				return responses.AccessDeniedAPIErrorResponse(ctx)
 			}
 
@@ -43,6 +35,7 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 				slog.Error(err.Error())
 
 				if errors.Is(err, models.ErrSessionNotFound) {
+					clearAuthToken(ctx)
 					return responses.AccessDeniedAPIErrorResponse(ctx)
 				}
 
@@ -60,4 +53,32 @@ func EnsureAuthenticated(di *internal.Di) echo.MiddlewareFunc {
 			return next(ctx)
 		}
 	}
+}
+
+func clearAuthToken(ctx echo.Context) {
+	cookie := new(http.Cookie)
+	cookie.Name = config.Env.CookieName
+	cookie.Value = ""
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = false
+	cookie.SameSite = http.SameSiteLaxMode
+	ctx.SetCookie(cookie)
+}
+
+func getAuthToken(ctx echo.Context) (string, error) {
+	cookie, err := ctx.Cookie(config.Env.CookieName)
+	if err != nil {
+		if errors.Is(err, echo.ErrCookieNotFound) {
+			return "", models.ErrSessionNotFound
+		}
+		return "", err
+	}
+
+	authToken := cookie.Value
+	if authToken == "" {
+		return "", models.ErrSessionNotFound
+	}
+
+	return authToken, nil
 }

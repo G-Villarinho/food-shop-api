@@ -20,6 +20,7 @@ import (
 type AuthService interface {
 	SignIn(ctx context.Context, email string) error
 	VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error)
+	SignOut(ctx context.Context) error
 }
 
 type authService struct {
@@ -147,6 +148,19 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 	}
 
 	return session.Token, nil
+}
+
+func (a *authService) SignOut(ctx context.Context) error {
+	sessionId, ok := ctx.Value(internal.SessionIDKey).(uuid.UUID)
+	if !ok {
+		return models.ErrSessionNotFound
+	}
+
+	if err := a.sessionService.DeleteSession(ctx, sessionId); err != nil {
+		return fmt.Errorf("delete session: %w", err)
+	}
+
+	return nil
 }
 
 func getMagicLinkKey(code uuid.UUID) string {

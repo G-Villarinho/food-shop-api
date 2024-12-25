@@ -19,6 +19,7 @@ import (
 type AuthHandler interface {
 	SignIn(ctx echo.Context) error
 	VeryfyMagicLink(ctx echo.Context) error
+	SignOut(ctx echo.Context) error
 }
 
 type authHandler struct {
@@ -115,4 +116,27 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 	ctx.SetCookie(cookie)
 
 	return ctx.Redirect(http.StatusFound, redirectURL)
+}
+
+func (a *authHandler) SignOut(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "auth"),
+		slog.String("func", "SignOut"),
+	)
+
+	if err := a.authService.SignOut(ctx.Request().Context()); err != nil {
+		log.Error(err.Error())
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = config.Env.CookieName
+	cookie.Value = ""
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = false
+	cookie.SameSite = http.SameSiteLaxMode
+	ctx.SetCookie(cookie)
+
+	return ctx.NoContent(http.StatusOK)
 }
