@@ -9,6 +9,7 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/level-up-api/utils"
 	"github.com/labstack/echo/v4"
 )
 
@@ -41,11 +42,18 @@ func (o *orderHandler) GetOrders(ctx echo.Context) error {
 
 	pagination, err := models.NewPagination(ctx.QueryParam("page"), ctx.QueryParam("limit"), ctx.QueryParam("sort"))
 	if err != nil {
-		log.Warn("Error to create pagination", slog.String("error", err.Error()))
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusUnprocessableEntity, "conflict", "Invalid pagination parameters")
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Invalid pagination paramenter")
 	}
 
-	response, err := o.orderService.GetPaginatedOrdersByRestaurantID(ctx.Request().Context(), pagination)
+	orderPagination := &models.OrderPagination{
+		Pagination:   *pagination,
+		Status:       utils.GetQueryStringPointer(ctx.QueryParam("status")),
+		OrderID:      utils.GetQueryStringPointer(ctx.QueryParam("orderId")),
+		CustomerName: utils.GetQueryStringPointer(ctx.QueryParam("customerName")),
+	}
+
+	response, err := o.orderService.GetPaginatedOrdersByRestaurantID(ctx.Request().Context(), orderPagination)
 	if err != nil {
 		log.Error(err.Error())
 

@@ -31,6 +31,13 @@ type CreateOrderPayload struct {
 	Items        []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
 }
 
+type OrderPagination struct {
+	Pagination
+	Status       *string `json:"status"`
+	OrderID      *string `json:"orderId"`
+	CustomerName *string `json:"customerName"`
+}
+
 type OrderResponse struct {
 	ID            uuid.UUID   `json:"id"`
 	CustommerName string      `json:"custommerName"`

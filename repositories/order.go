@@ -13,7 +13,7 @@ import (
 
 type OrderRepository interface {
 	CreateOrderWithItems(ctx context.Context, order *models.Order, items []models.OrderItem) error
-	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Order], error)
+	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error)
 }
 
 type orderRepository struct {
@@ -51,14 +51,30 @@ func (o *orderRepository) CreateOrderWithItems(ctx context.Context, order *model
 	})
 }
 
-func (o *orderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.Pagination) (*models.PaginatedResponse[models.Order], error) {
-	query := o.DB.WithContext(ctx).Model(&models.Order{}).Preload("Custommer").Where("RestaurantID = ?", restaurantID)
-	orders, err := paginate[models.Order](query, pagination, &models.Order{})
+func (o *orderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error) {
+	query := o.DB.WithContext(ctx).
+		Model(&models.Order{}).
+		Preload("Custommer").
+		Where("RestaurantID = ?", restaurantID)
+
+	if pagination.Status != nil {
+		query = query.Where("Order.Status = ?", *pagination.Status)
+	}
+
+	if pagination.OrderID != nil {
+		query = query.Where("Id LIKE ?", fmt.Sprintf("%%%s%%", *pagination.OrderID))
+	}
+
+	if pagination.CustomerName != nil {
+		query = query.Joins("JOIN User ON User.Id = Order.CustommerID").
+			Where("User.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.CustomerName))
+	}
+
+	orders, err := paginate[models.Order](query, &pagination.Pagination, &models.Order{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-
 		return nil, err
 	}
 
