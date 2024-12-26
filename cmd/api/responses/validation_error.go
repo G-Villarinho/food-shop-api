@@ -31,7 +31,7 @@ func NewValidationErrorResponse(ctx echo.Context, validationErrors validation.Va
 	return ctx.JSON(http.StatusUnprocessableEntity, ValidationErrorResponse{
 		StatusCode: http.StatusUnprocessableEntity,
 		Title:      "Validation Error",
-		Details:    "One or more fields are invalid.",
+		Details:    "Um ou mais campos estão inválidos.",
 		Errors:     errors,
 	})
 }

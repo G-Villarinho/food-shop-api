@@ -16,7 +16,7 @@ func InternalServerAPIErrorResponse(ctx echo.Context) error {
 	return ctx.JSON(http.StatusInternalServerError, ErrorResponse{
 		StatusCode: http.StatusInternalServerError,
 		Title:      "Internal Server Error",
-		Details:    "Something went wrong. Please try again later.",
+		Details:    "Ocorreu um erro interno no servidor. Por favor, tente novamente mais tarde.",
 	})
 }
 
@@ -24,7 +24,7 @@ func AccessDeniedAPIErrorResponse(ctx echo.Context) error {
 	return ctx.JSON(http.StatusUnauthorized, ErrorResponse{
 		StatusCode: http.StatusUnauthorized,
 		Title:      "Access Denied",
-		Details:    "You need to be logged in to access this resource.",
+		Details:    "Você precisa estar autenticado para acessar este recurso.",
 	})
 }
 
@@ -32,7 +32,7 @@ func ForbiddenPermissionAPIErrorResponse(ctx echo.Context) error {
 	return ctx.JSON(http.StatusForbidden, ErrorResponse{
 		StatusCode: http.StatusForbidden,
 		Title:      "Permission Denied",
-		Details:    "You do not have permission to perform this action.",
+		Details:    "Você não tem permissão para acessar este recurso.",
 	})
 }
 
@@ -40,7 +40,7 @@ func CannotBindPayloadAPIErrorResponse(ctx echo.Context) error {
 	errorResponse := ErrorResponse{
 		StatusCode: http.StatusUnprocessableEntity,
 		Title:      "Unable to Process Request",
-		Details:    "We encountered an issue while trying to process your request. The data you provided is not in the expected format.",
+		Details:    "Não foi possível processar os dados enviados. Verifique se as informações estão no formato correto.",
 	}
 	return ctx.JSON(http.StatusUnprocessableEntity, errorResponse)
 }

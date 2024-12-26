@@ -58,7 +58,7 @@ func (r *restaurantHandler) CreateRestaurant(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrEmailAlreadyExists) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "The email already registered. Please try again with a different email.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "O e-mail informado já está em uso. Por favor, informe outro.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
@@ -76,7 +76,7 @@ func (r *restaurantHandler) CreateOrder(ctx echo.Context) error {
 	restaurantID, err := uuid.Parse(ctx.Param("restaurantID"))
 	if err != nil {
 		log.Warn("Error to parse restaurantID", slog.String("error", err.Error()))
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "bad_request", "Invalid restaurant paramaters")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "bad_request", "O parâmetro 'restaurantID' fornecido é inválido.")
 	}
 
 	var payload models.CreateOrderPayload
@@ -94,11 +94,11 @@ func (r *restaurantHandler) CreateOrder(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrRestaurantNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurant not found")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "O restaurante especificado não foi encontrado. Verifique o ID e tente novamente.")
 		}
 
 		if errors.Is(err, models.ErrSomeProductsNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "bad_request", "Some products not found")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "bad_request", "Alguns produtos do pedido não foram encontrados. Verifique os itens do pedido e tente novamente.")
 		}
 
 		if errors.Is(err, models.ErrUserNotFoundInContext) {

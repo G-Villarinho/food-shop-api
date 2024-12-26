@@ -57,7 +57,7 @@ func (u *userHandler) CreateUser(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrEmailAlreadyExists) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "The email already registered. Please try again with a different email.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusConflict, "conflict", "O email informado já está em uso. Por favor, informe outro.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)

@@ -4,11 +4,12 @@ type Permission string
 
 const (
 	CreateOrderPermission Permission = "create_order"
+	CancelOrderPermission Permission = "cancel_order"
 	ListOrdersPermission  Permission = "list_orders"
 )
 
 var rolePermissions = map[Role][]Permission{
-	Manager:  {ListOrdersPermission},
+	Manager:  {ListOrdersPermission, CancelOrderPermission},
 	Customer: {CreateOrderPermission},
 }
 

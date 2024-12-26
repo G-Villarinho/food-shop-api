@@ -60,7 +60,7 @@ func (a *authHandler) SignIn(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, 404, "not_found", "User not found.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, 404, "not_found", "Não foi encontrado um usuário com o e-mail informado. Por favor, verifique e tente novamente.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
@@ -77,18 +77,18 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 	code, err := uuid.Parse(ctx.QueryParam("code"))
 	if err != nil {
 		log.Warn("Invalid Magic Link code format")
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "Invalid Magic Link code format.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "O código do link mágico está em um formato inválido. Verifique o link e tente novamente.")
 	}
 
 	redirectURL := ctx.QueryParam("redirect")
 	if redirectURL == "" {
 		log.Warn("Redirect URL is missing")
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "Redirect URL is required.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "É necessário informar uma URL de redirecionamento para continuar.")
 	}
 
 	if redirectURL != config.Env.RedirectURL {
 		log.Warn("Redirect URL is invalid")
-		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "Redirect URL is invalid.")
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_request", "A URL de redirecionamento informada não é válida. Entre em contato com o suporte.")
 	}
 
 	token, err := a.authService.VeryfyMagicLink(ctx.Request().Context(), code)
@@ -96,11 +96,11 @@ func (a *authHandler) VeryfyMagicLink(ctx echo.Context) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrMagicLinkNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Magic Link not found.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "O link mágico expirou ou é inválido. Solicite um novo para acessar.")
 		}
 
 		if errors.Is(err, models.ErrUserNotFound) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "User not found.")
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Não encontramos nenhum usuário associado a este link mágico. Verifique e tente novamente.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)

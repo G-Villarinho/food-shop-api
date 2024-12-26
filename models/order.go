@@ -1,6 +1,17 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
+
+var (
+	ErrorOrderNotFound                  = errors.New("order not found in database")
+	ErrOrderIsDelivered                 = errors.New("order is already delivered")
+	ErrorOrderCannotBeCancelled         = errors.New("order cannot be cancelled unless status is 'pending' or 'processing'")
+	ErrorOrderDoesNotBelongToRestaurant = errors.New("order does not belong to the specified restaurant")
+)
 
 type OrderStatus string
 

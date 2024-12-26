@@ -13,6 +13,7 @@ import (
 type OrderService interface {
 	CreateOrder(ctx context.Context, custommerID, restaurantID uuid.UUID, payload models.CreateOrderPayload) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, pagination *models.OrderPagination) (*models.PaginatedResponse[*models.OrderResponse], error)
+	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 }
 
 type orderService struct {
@@ -83,15 +84,6 @@ func (o *orderService) GetPaginatedOrdersByRestaurantID(ctx context.Context, pag
 		return nil, models.ErrRestaurantNotFound
 	}
 
-	restaurant, err := o.restaurantRepository.GetRestaurantByID(ctx, *restaurantID)
-	if err != nil {
-		return nil, fmt.Errorf("get restaurant by ID: %w", err)
-	}
-
-	if restaurant == nil {
-		return nil, models.ErrRestaurantNotFound
-	}
-
 	paginatedOrders, err := o.orderRepository.GetPaginatedOrdersByRestaurantID(ctx, *restaurantID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("get paginated orders by restaurant ID: %w", err)
@@ -106,4 +98,34 @@ func (o *orderService) GetPaginatedOrdersByRestaurantID(ctx context.Context, pag
 	})
 
 	return paginatedOrdersResponse, nil
+}
+
+func (o *orderService) CancelOrder(ctx context.Context, orderID uuid.UUID) error {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return models.ErrRestaurantNotFound
+	}
+
+	order, err := o.orderRepository.GetOrderByID(ctx, orderID, false)
+	if err != nil {
+		return fmt.Errorf("get order by ID: %w", err)
+	}
+
+	if order == nil {
+		return models.ErrorOrderNotFound
+	}
+
+	if order.RestaurantID != *restaurantID {
+		return models.ErrorOrderDoesNotBelongToRestaurant
+	}
+
+	if order.Status != models.Pending && order.Status != models.Processing {
+		return models.ErrorOrderCannotBeCancelled
+	}
+
+	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Canceled); err != nil {
+		return fmt.Errorf("update status: %w", err)
+	}
+
+	return nil
 }

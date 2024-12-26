@@ -19,4 +19,5 @@ func setupOrderRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/orders", middleware.EnsureAuthenticated(di))
 
 	group.GET("", orderHandler.GetOrders, middleware.EnsurePermission(models.ListOrdersPermission))
+	group.PATCH("/:orderId/cancel", orderHandler.CancelOrder, middleware.EnsurePermission(models.CancelOrderPermission))
 }

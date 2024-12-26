@@ -10,11 +10,13 @@ import (
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
 	"github.com/G-Villarinho/level-up-api/utils"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type OrderHandler interface {
 	GetOrders(ctx echo.Context) error
+	CancelOrder(ctx echo.Context) error
 }
 
 type orderHandler struct {
@@ -65,4 +67,46 @@ func (o *orderHandler) GetOrders(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+func (o *orderHandler) CancelOrder(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "restaurant"),
+		slog.String("func", "CancelOrder"),
+	)
+
+	orderID, err := uuid.Parse(ctx.Param("orderId"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_order_id", "Pedido inválido")
+	}
+
+	err = o.orderService.CancelOrder(ctx.Request().Context(), orderID)
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrRestaurantNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurante não encontrado")
+		}
+
+		if errors.Is(err, models.ErrorOrderNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Pedido não encontrado no nosso sistema")
+		}
+
+		if errors.Is(err, models.ErrOrderIsDelivered) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_is_delivered", "O pedido já foi entregue")
+		}
+
+		if errors.Is(err, models.ErrorOrderCannotBeCancelled) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_cannot_be_cancelled", "O pedido não pode ser cancelado depois de ser enviado.")
+		}
+
+		if errors.Is(err, models.ErrorOrderDoesNotBelongToRestaurant) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_does_not_belong_to_restaurant", "O pedido não pertence ao restaurante especificado")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
 }

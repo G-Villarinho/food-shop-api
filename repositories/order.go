@@ -14,6 +14,8 @@ import (
 type OrderRepository interface {
 	CreateOrderWithItems(ctx context.Context, order *models.Order, items []models.OrderItem) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error)
+	UpdateStatus(ctx context.Context, orderID uuid.UUID, status models.OrderStatus) error
+	GetOrderByID(ctx context.Context, orderID uuid.UUID, preload bool) (*models.Order, error)
 }
 
 type orderRepository struct {
@@ -79,4 +81,33 @@ func (o *orderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, 
 	}
 
 	return orders, nil
+}
+
+func (o *orderRepository) UpdateStatus(ctx context.Context, orderID uuid.UUID, status models.OrderStatus) error {
+	return o.DB.WithContext(ctx).
+		Model(&models.Order{}).
+		Where("Id = ?", orderID).
+		Update("Status", status).
+		Error
+}
+
+func (o *orderRepository) GetOrderByID(ctx context.Context, orderID uuid.UUID, preload bool) (*models.Order, error) {
+	query := o.DB.WithContext(ctx).
+		Model(&models.Order{}).
+		Where("Id = ?", orderID)
+
+	if preload {
+		query = query.Preload("Custommer").
+			Preload("Restaurant")
+	}
+
+	var order models.Order
+	if err := query.First(&order).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &order, nil
 }
