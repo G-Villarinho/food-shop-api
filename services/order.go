@@ -16,6 +16,7 @@ type OrderService interface {
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	ApproveOrder(ctx context.Context, orderID uuid.UUID) error
 	DispatchOrder(ctx context.Context, orderID uuid.UUID) error
+	DeliverOrder(ctx context.Context, orderID uuid.UUID) error
 }
 
 type orderService struct {
@@ -186,6 +187,36 @@ func (o *orderService) DispatchOrder(ctx context.Context, orderID uuid.UUID) err
 	}
 
 	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Delivering); err != nil {
+		return fmt.Errorf("update status: %w", err)
+	}
+
+	return nil
+}
+
+func (o *orderService) DeliverOrder(ctx context.Context, orderID uuid.UUID) error {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return models.ErrRestaurantNotFound
+	}
+
+	order, err := o.orderRepository.GetOrderByID(ctx, orderID, false)
+	if err != nil {
+		return fmt.Errorf("get order by ID: %w", err)
+	}
+
+	if order == nil {
+		return models.ErrorOrderNotFound
+	}
+
+	if order.RestaurantID != *restaurantID {
+		return models.ErrorOrderDoesNotBelongToRestaurant
+	}
+
+	if order.Status != models.Delivering {
+		return models.ErrOrderCannotBeDelivered
+	}
+
+	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Delivered); err != nil {
 		return fmt.Errorf("update status: %w", err)
 	}
 

@@ -7,12 +7,13 @@ const (
 	CancelOrderPermission   Permission = "cancel_order"
 	ApproveOrderPermission  Permission = "approve_order"
 	DispatchOrderPermission Permission = "dispatch_order"
+	DeliverOrderPermission  Permission = "deliver_order"
 	ListOrdersPermission    Permission = "list_orders"
 )
 
 var rolePermissions = map[Role][]Permission{
 	Manager:  {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission},
-	Customer: {CreateOrderPermission},
+	Customer: {CreateOrderPermission, DeliverOrderPermission},
 }
 
 func CheckPermission(role Role, permission Permission) bool {
