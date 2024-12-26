@@ -97,12 +97,12 @@ func (o *orderHandler) CancelOrder(ctx echo.Context) error {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_is_delivered", "O pedido já foi entregue")
 		}
 
-		if errors.Is(err, models.ErrorOrderCannotBeCancelled) {
-			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_cannot_be_cancelled", "O pedido não pode ser cancelado depois de ser enviado.")
-		}
-
 		if errors.Is(err, models.ErrorOrderDoesNotBelongToRestaurant) {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_does_not_belong_to_restaurant", "O pedido não pertence ao restaurante especificado")
+		}
+
+		if errors.Is(err, models.ErrorOrderCannotBeCancelled) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_cannot_be_cancelled", "O pedido não pode ser cancelado após ele já ter sido entregue, enviado ou cancelado anteriormente.")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
