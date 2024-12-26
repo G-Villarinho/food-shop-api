@@ -20,4 +20,5 @@ func setupOrderRoutes(e *echo.Echo, di *internal.Di) {
 
 	group.GET("", orderHandler.GetOrders, middleware.EnsurePermission(models.ListOrdersPermission))
 	group.PATCH("/:orderId/cancel", orderHandler.CancelOrder, middleware.EnsurePermission(models.CancelOrderPermission))
+	group.PATCH("/:orderId/approve", orderHandler.ApproveOrder, middleware.EnsurePermission(models.ApproveOrderPermission))
 }

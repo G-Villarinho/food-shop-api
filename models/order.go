@@ -11,6 +11,7 @@ var (
 	ErrOrderIsDelivered                 = errors.New("order is already delivered")
 	ErrorOrderCannotBeCancelled         = errors.New("order cannot be cancelled unless status is 'pending' or 'processing'")
 	ErrorOrderDoesNotBelongToRestaurant = errors.New("order does not belong to the specified restaurant")
+	ErrOrderCannotBeApproved            = errors.New("order cannot be approved unless status is 'pending'")
 )
 
 type OrderStatus string
@@ -38,8 +39,7 @@ func (o *Order) TableName() string {
 }
 
 type CreateOrderPayload struct {
-	RestaurantID uuid.UUID                `json:"restaurantId" validate:"required"`
-	Items        []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
+	Items []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
 }
 
 type OrderPagination struct {

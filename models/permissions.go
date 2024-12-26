@@ -3,13 +3,14 @@ package models
 type Permission string
 
 const (
-	CreateOrderPermission Permission = "create_order"
-	CancelOrderPermission Permission = "cancel_order"
-	ListOrdersPermission  Permission = "list_orders"
+	CreateOrderPermission  Permission = "create_order"
+	CancelOrderPermission  Permission = "cancel_order"
+	ApproveOrderPermission Permission = "approve_order"
+	ListOrdersPermission   Permission = "list_orders"
 )
 
 var rolePermissions = map[Role][]Permission{
-	Manager:  {ListOrdersPermission, CancelOrderPermission},
+	Manager:  {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission},
 	Customer: {CreateOrderPermission},
 }
 

@@ -14,6 +14,7 @@ type OrderService interface {
 	CreateOrder(ctx context.Context, custommerID, restaurantID uuid.UUID, payload models.CreateOrderPayload) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, pagination *models.OrderPagination) (*models.PaginatedResponse[*models.OrderResponse], error)
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
+	ApproveOrder(ctx context.Context, orderID uuid.UUID) error
 }
 
 type orderService struct {
@@ -60,7 +61,7 @@ func (o *orderService) CreateOrder(ctx context.Context, custommerID, restaurantI
 		productsIDs = append(productsIDs, item.ProductID)
 	}
 
-	products, err := o.productRepository.GetProductsByIDsAndRestaurantID(ctx, productsIDs, payload.RestaurantID)
+	products, err := o.productRepository.GetProductsByIDsAndRestaurantID(ctx, productsIDs, restaurantID)
 	if err != nil {
 		return fmt.Errorf("get products by ids and restaurant id: %w", err)
 	}
@@ -70,7 +71,7 @@ func (o *orderService) CreateOrder(ctx context.Context, custommerID, restaurantI
 		return models.ErrSomeProductsNotFound
 	}
 
-	order := models.NewOrder(custommerID, payload.RestaurantID, orderItemSummary.TotalInCents)
+	order := models.NewOrder(custommerID, restaurantID, orderItemSummary.TotalInCents)
 	if err := o.orderRepository.CreateOrderWithItems(ctx, order, orderItemSummary.OrderItems); err != nil {
 		return fmt.Errorf("error to create order: %w", err)
 	}
@@ -124,6 +125,36 @@ func (o *orderService) CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	}
 
 	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Canceled); err != nil {
+		return fmt.Errorf("update status: %w", err)
+	}
+
+	return nil
+}
+
+func (o *orderService) ApproveOrder(ctx context.Context, orderID uuid.UUID) error {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return models.ErrRestaurantNotFound
+	}
+
+	order, err := o.orderRepository.GetOrderByID(ctx, orderID, false)
+	if err != nil {
+		return fmt.Errorf("get order by ID: %w", err)
+	}
+
+	if order == nil {
+		return models.ErrorOrderNotFound
+	}
+
+	if order.RestaurantID != *restaurantID {
+		return models.ErrorOrderDoesNotBelongToRestaurant
+	}
+
+	if order.Status != models.Pending {
+		return models.ErrOrderCannotBeApproved
+	}
+
+	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Processing); err != nil {
 		return fmt.Errorf("update status: %w", err)
 	}
 
