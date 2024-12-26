@@ -15,6 +15,7 @@ type OrderService interface {
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, pagination *models.OrderPagination) (*models.PaginatedResponse[*models.OrderResponse], error)
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	ApproveOrder(ctx context.Context, orderID uuid.UUID) error
+	DispatchOrder(ctx context.Context, orderID uuid.UUID) error
 }
 
 type orderService struct {
@@ -155,6 +156,36 @@ func (o *orderService) ApproveOrder(ctx context.Context, orderID uuid.UUID) erro
 	}
 
 	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Processing); err != nil {
+		return fmt.Errorf("update status: %w", err)
+	}
+
+	return nil
+}
+
+func (o *orderService) DispatchOrder(ctx context.Context, orderID uuid.UUID) error {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return models.ErrRestaurantNotFound
+	}
+
+	order, err := o.orderRepository.GetOrderByID(ctx, orderID, false)
+	if err != nil {
+		return fmt.Errorf("get order by ID: %w", err)
+	}
+
+	if order == nil {
+		return models.ErrorOrderNotFound
+	}
+
+	if order.RestaurantID != *restaurantID {
+		return models.ErrorOrderDoesNotBelongToRestaurant
+	}
+
+	if order.Status != models.Processing {
+		return models.ErrOrderCannotBeDispatched
+	}
+
+	if err := o.orderRepository.UpdateStatus(ctx, orderID, models.Delivering); err != nil {
 		return fmt.Errorf("update status: %w", err)
 	}
 

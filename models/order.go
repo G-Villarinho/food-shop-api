@@ -12,6 +12,7 @@ var (
 	ErrorOrderCannotBeCancelled         = errors.New("order cannot be cancelled unless status is 'pending' or 'processing'")
 	ErrorOrderDoesNotBelongToRestaurant = errors.New("order does not belong to the specified restaurant")
 	ErrOrderCannotBeApproved            = errors.New("order cannot be approved unless status is 'pending'")
+	ErrOrderCannotBeDispatched          = errors.New("order cannot be dispatched unless status is 'processing'")
 )
 
 type OrderStatus string

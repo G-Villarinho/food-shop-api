@@ -18,6 +18,7 @@ type OrderHandler interface {
 	GetOrders(ctx echo.Context) error
 	CancelOrder(ctx echo.Context) error
 	ApproveOrder(ctx echo.Context) error
+	DispatchOrder(ctx echo.Context) error
 }
 
 type orderHandler struct {
@@ -142,6 +143,44 @@ func (o *orderHandler) ApproveOrder(ctx echo.Context) error {
 
 		if errors.Is(err, models.ErrOrderCannotBeApproved) {
 			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_cannot_be_approved", "O pedido só pode ser aprovado se estiver com status 'Pendente'")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (o *orderHandler) DispatchOrder(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "restaurant"),
+		slog.String("func", "DispatchOrder"),
+	)
+
+	orderID, err := uuid.Parse(ctx.Param("orderId"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_order_id", "Pedido inválido")
+	}
+
+	err = o.orderService.DispatchOrder(ctx.Request().Context(), orderID)
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrRestaurantNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurante não encontrado")
+		}
+
+		if errors.Is(err, models.ErrorOrderNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Pedido não encontrado no nosso sistema")
+		}
+
+		if errors.Is(err, models.ErrorOrderDoesNotBelongToRestaurant) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_does_not_belong_to_restaurant", "O pedido não pertence ao restaurante especificado")
+		}
+
+		if errors.Is(err, models.ErrOrderCannotBeDispatched) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "order_cannot_be_dispatched", "O pedido só pode ser despachado se estiver com status 'Em processamento'")
 		}
 
 		return responses.InternalServerAPIErrorResponse(ctx)
