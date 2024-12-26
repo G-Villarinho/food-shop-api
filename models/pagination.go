@@ -28,7 +28,7 @@ func NewPagination(pageStr, limitStr, sort string) (*Pagination, error) {
 	}
 
 	if sort == "" {
-		sort = "id ASC"
+		sort = "CreatedAt desc"
 	}
 
 	return &Pagination{
