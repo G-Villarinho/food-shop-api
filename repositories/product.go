@@ -76,7 +76,7 @@ func (p *productRepository) GetPopularProducts(ctx context.Context, restaurantID
 	if err := p.DB.WithContext(ctx).
 		Table("OrderItems").
 		Select("Products.name as name, COUNT(OrderItems.id) as count").
-		Joins("LEFT JOIN Orders ON Order.Id = OrderItems.OrderID").
+		Joins("LEFT JOIN Orders ON Orders.Id = OrderItems.OrderID").
 		Joins("LEFT JOIN Products ON Products.Id = OrderItems.ProductID").
 		Where("Orders.RestaurantID = ?", restaurantID).
 		Group("Products.`name`").
