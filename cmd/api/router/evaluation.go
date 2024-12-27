@@ -3,10 +3,10 @@ package router
 import (
 	"log"
 
-	"github.com/G-Villarinho/level-up-api/cmd/api/handler"
-	"github.com/G-Villarinho/level-up-api/internal"
-	"github.com/G-Villarinho/level-up-api/middleware"
-	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/G-Villarinho/food-shop-api/cmd/api/handler"
+	"github.com/G-Villarinho/food-shop-api/internal"
+	"github.com/G-Villarinho/food-shop-api/middleware"
+	"github.com/G-Villarinho/food-shop-api/models"
 	"github.com/labstack/echo/v4"
 )
 

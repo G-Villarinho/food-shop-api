@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 
-	"github.com/G-Villarinho/level-up-api/config"
+	"github.com/G-Villarinho/food-shop-api/config"
 	"github.com/go-redis/redis/v8"
 )
 

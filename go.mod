@@ -1,4 +1,4 @@
-module github.com/G-Villarinho/level-up-api
+module github.com/G-Villarinho/food-shop-api
 
 go 1.23.3
 

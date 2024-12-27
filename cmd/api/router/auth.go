@@ -3,8 +3,8 @@ package router
 import (
 	"log"
 
-	"github.com/G-Villarinho/level-up-api/cmd/api/handler"
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/cmd/api/handler"
+	"github.com/G-Villarinho/food-shop-api/internal"
 	"github.com/labstack/echo/v4"
 )
 

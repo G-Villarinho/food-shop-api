@@ -3,8 +3,8 @@ package client
 import (
 	"fmt"
 
-	"github.com/G-Villarinho/level-up-api/config"
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/config"
+	"github.com/G-Villarinho/food-shop-api/internal"
 	"github.com/rabbitmq/amqp091-go"
 )
 

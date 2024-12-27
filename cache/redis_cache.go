@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/internal"
 	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
 )

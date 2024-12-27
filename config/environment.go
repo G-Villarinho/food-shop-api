@@ -7,7 +7,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/G-Villarinho/level-up-api/config/models"
+	"github.com/G-Villarinho/food-shop-api/config/models"
 	"github.com/Netflix/go-env"
 	"github.com/joho/godotenv"
 )

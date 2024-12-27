@@ -8,8 +8,8 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/G-Villarinho/level-up-api/config"
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/config"
+	"github.com/G-Villarinho/food-shop-api/internal"
 )
 
 type MailtrapRecipient struct {

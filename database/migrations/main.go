@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/G-Villarinho/level-up-api/config"
-	"github.com/G-Villarinho/level-up-api/database"
-	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/G-Villarinho/food-shop-api/config"
+	"github.com/G-Villarinho/food-shop-api/database"
+	"github.com/G-Villarinho/food-shop-api/models"
 )
 
 func main() {

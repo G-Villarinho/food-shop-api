@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/G-Villarinho/food-shop-api/models"
 	"gorm.io/gorm"
 )
 

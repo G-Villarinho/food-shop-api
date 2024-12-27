@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/internal"
 )
 
 type TemplateService interface {

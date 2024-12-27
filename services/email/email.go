@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/G-Villarinho/level-up-api/client"
-	"github.com/G-Villarinho/level-up-api/config"
-	"github.com/G-Villarinho/level-up-api/internal"
-	"github.com/G-Villarinho/level-up-api/models"
-	"github.com/G-Villarinho/level-up-api/templates"
+	"github.com/G-Villarinho/food-shop-api/client"
+	"github.com/G-Villarinho/food-shop-api/config"
+	"github.com/G-Villarinho/food-shop-api/internal"
+	"github.com/G-Villarinho/food-shop-api/models"
+	"github.com/G-Villarinho/food-shop-api/templates"
 )
 
 type EmailService interface {

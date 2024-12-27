@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/G-Villarinho/level-up-api/cmd/api/responses"
-	"github.com/G-Villarinho/level-up-api/config"
-	"github.com/G-Villarinho/level-up-api/internal"
-	"github.com/G-Villarinho/level-up-api/models"
-	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/food-shop-api/cmd/api/responses"
+	"github.com/G-Villarinho/food-shop-api/config"
+	"github.com/G-Villarinho/food-shop-api/internal"
+	"github.com/G-Villarinho/food-shop-api/models"
+	"github.com/G-Villarinho/food-shop-api/services"
 	"github.com/labstack/echo/v4"
 )
 

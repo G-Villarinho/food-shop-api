@@ -3,8 +3,8 @@ package services
 import (
 	"fmt"
 
-	"github.com/G-Villarinho/level-up-api/client"
-	"github.com/G-Villarinho/level-up-api/internal"
+	"github.com/G-Villarinho/food-shop-api/client"
+	"github.com/G-Villarinho/food-shop-api/internal"
 )
 
 const (

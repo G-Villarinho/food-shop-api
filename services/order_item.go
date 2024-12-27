@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/G-Villarinho/level-up-api/internal"
-	"github.com/G-Villarinho/level-up-api/models"
+	"github.com/G-Villarinho/food-shop-api/internal"
+	"github.com/G-Villarinho/food-shop-api/models"
 	"github.com/google/uuid"
 )
 
