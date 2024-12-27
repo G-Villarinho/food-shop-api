@@ -24,3 +24,20 @@ type Product struct {
 func (p *Product) TableName() string {
 	return "Product"
 }
+
+type PopularProduct struct {
+	Name  string
+	Count int
+}
+
+type PopularProductResponse struct {
+	Name  string `json:"name"`
+	Count int    `json:"count"`
+}
+
+func (p *PopularProduct) ToPopularProductResponse() *PopularProductResponse {
+	return &PopularProductResponse{
+		Name:  p.Name,
+		Count: p.Count,
+	}
+}
