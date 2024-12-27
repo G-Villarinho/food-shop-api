@@ -56,7 +56,8 @@ func (e *evaluationHandler) CreateEvaluation(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, err)
 	}
 
-	if err := e.EvaluationService.CreateEvaluation(ctx.Request().Context(), payload); err != nil {
+	response, err := e.EvaluationService.CreateEvaluation(ctx.Request().Context(), payload)
+	if err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrUserNotFoundInContext) {
@@ -70,7 +71,7 @@ func (e *evaluationHandler) CreateEvaluation(ctx echo.Context) error {
 		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
-	return ctx.NoContent(http.StatusCreated)
+	return ctx.JSON(http.StatusCreated, response)
 }
 
 func (e *evaluationHandler) GetEvaluations(ctx echo.Context) error {
@@ -123,7 +124,8 @@ func (e *evaluationHandler) UpdateAnswer(ctx echo.Context) error {
 		return responses.NewValidationErrorResponse(ctx, err)
 	}
 
-	if err := e.EvaluationService.UpdateAnswer(ctx.Request().Context(), payload); err != nil {
+	response, err := e.EvaluationService.UpdateAnswer(ctx.Request().Context(), payload)
+	if err != nil {
 		log.Error(err.Error())
 
 		if errors.Is(err, models.ErrRestaurantNotFound) {
@@ -141,7 +143,7 @@ func (e *evaluationHandler) UpdateAnswer(ctx echo.Context) error {
 		return responses.InternalServerAPIErrorResponse(ctx)
 	}
 
-	return ctx.NoContent(http.StatusNoContent)
+	return ctx.JSON(http.StatusOK, response)
 }
 
 func (e *evaluationHandler) GetEvaluationSumary(ctx echo.Context) error {

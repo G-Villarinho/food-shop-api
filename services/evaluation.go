@@ -11,9 +11,9 @@ import (
 )
 
 type EvaluationService interface {
-	CreateEvaluation(ctx context.Context, evaluation models.CreateEvaluationPayload) error
+	CreateEvaluation(ctx context.Context, payload models.CreateEvaluationPayload) (*models.EvaluationResponse, error)
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error)
-	UpdateAnswer(ctx context.Context, payload models.UpdateAnswerPayload) error
+	UpdateAnswer(ctx context.Context, payload models.UpdateAnswerPayload) (*models.EvaluationResponse, error)
 	GetEvaluationSumary(ctx context.Context) (*models.EvaluationSummaryResponse, error)
 }
 
@@ -41,26 +41,27 @@ func NewEvaluationService(di *internal.Di) (EvaluationService, error) {
 	}, nil
 }
 
-func (e *evaluationService) CreateEvaluation(ctx context.Context, evaluation models.CreateEvaluationPayload) error {
+func (e *evaluationService) CreateEvaluation(ctx context.Context, payload models.CreateEvaluationPayload) (*models.EvaluationResponse, error) {
 	custommerID, ok := ctx.Value(internal.UserIDKey).(uuid.UUID)
 	if !ok {
-		return models.ErrUserNotFoundInContext
+		return nil, models.ErrUserNotFoundInContext
 	}
 
-	restaurant, err := e.restaurantRepository.GetRestaurantByID(ctx, evaluation.RestaurantID)
+	restaurant, err := e.restaurantRepository.GetRestaurantByID(ctx, payload.RestaurantID)
 	if err != nil {
-		return fmt.Errorf("get restaurant by ID: %w", err)
+		return nil, fmt.Errorf("get restaurant by ID: %w", err)
 	}
 
 	if restaurant == nil {
-		return models.ErrRestaurantNotFound
+		return nil, models.ErrRestaurantNotFound
 	}
 
-	if err := e.evaluationRepository.CreateEvaluation(ctx, *evaluation.ToEvaluation(custommerID)); err != nil {
-		return fmt.Errorf("create evaluation: %w", err)
+	evaluation := payload.ToEvaluation(custommerID)
+	if err := e.evaluationRepository.CreateEvaluation(ctx, *evaluation); err != nil {
+		return nil, fmt.Errorf("create evaluation: %w", err)
 	}
 
-	return nil
+	return evaluation.ToEvaluationResponse(), nil
 }
 
 func (e *evaluationService) GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error) {
@@ -85,30 +86,33 @@ func (e *evaluationService) GetPaginatedEvaluationsByRestaurantID(ctx context.Co
 	return paginatedEvaluationsResponse, nil
 }
 
-func (e *evaluationService) UpdateAnswer(ctx context.Context, payload models.UpdateAnswerPayload) error {
+func (e *evaluationService) UpdateAnswer(ctx context.Context, payload models.UpdateAnswerPayload) (*models.EvaluationResponse, error) {
 	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
 	if !ok {
-		return models.ErrRestaurantNotFound
+		return nil, models.ErrRestaurantNotFound
 	}
 
 	evaluation, err := e.evaluationRepository.GetEvaluationByID(ctx, payload.EvaluationID)
 	if err != nil {
-		return fmt.Errorf("get evaluation by ID: %w", err)
+		return nil, fmt.Errorf("get evaluation by ID: %w", err)
 	}
 
 	if evaluation == nil {
-		return models.ErrEvaluationNotFound
+		return nil, models.ErrEvaluationNotFound
 	}
 
 	if evaluation.RestaurantID != *restaurantID {
-		return models.ErrEvaluationDoesNotBelongToRestaurant
+		return nil, models.ErrEvaluationDoesNotBelongToRestaurant
 	}
 
 	if err := e.evaluationRepository.UpdateAnswer(ctx, payload.EvaluationID, payload.Answer); err != nil {
-		return fmt.Errorf("update answer: %w", err)
+		return nil, fmt.Errorf("update answer: %w", err)
 	}
 
-	return nil
+	evaluationResponse := evaluation.ToEvaluationResponse()
+	evaluationResponse.Answer = &payload.Answer
+
+	return evaluationResponse, nil
 }
 
 func (e *evaluationService) GetEvaluationSumary(ctx context.Context) (*models.EvaluationSummaryResponse, error) {
