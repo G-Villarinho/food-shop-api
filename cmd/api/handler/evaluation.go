@@ -10,12 +10,14 @@ import (
 	"github.com/G-Villarinho/level-up-api/internal"
 	"github.com/G-Villarinho/level-up-api/models"
 	"github.com/G-Villarinho/level-up-api/services"
+	"github.com/G-Villarinho/level-up-api/utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/echo/v4"
 )
 
 type EvaluationHandler interface {
 	CreateEvaluation(ctx echo.Context) error
+	GetEvaluations(ctx echo.Context) error
 }
 
 type evaluationHandler struct {
@@ -67,4 +69,37 @@ func (e *evaluationHandler) CreateEvaluation(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusCreated)
+}
+
+func (e *evaluationHandler) GetEvaluations(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "evaluation"),
+		slog.String("func", "GetEvaluations"),
+	)
+
+	pagination, err := models.NewPagination(ctx.QueryParam("page"), ctx.QueryParam("limit"), ctx.QueryParam("sort"))
+	if err != nil {
+		log.Error(err.Error())
+		return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusBadRequest, "invalid_pagination", "Parâmetros de paginação inválidos")
+	}
+
+	evaluationPagination := &models.EvaluationPagination{
+		Pagination:   *pagination,
+		Rating:       utils.GetQueryIntPointer(ctx.QueryParam("rating")),
+		CustomerName: utils.GetQueryStringPointer(ctx.QueryParam("customerName")),
+	}
+
+	response, err := e.EvaluationService.GetPaginatedEvaluationsByRestaurantID(ctx.Request().Context(), evaluationPagination)
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrRestaurantNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurante não encontrado")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+
 }

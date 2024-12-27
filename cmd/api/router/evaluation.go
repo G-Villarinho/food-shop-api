@@ -19,4 +19,5 @@ func setupEvaluationRoutes(e *echo.Echo, di *internal.Di) {
 	group := e.Group("/v1/evaluations", middleware.EnsureAuthenticated(di))
 
 	group.POST("", evaluationHandler.CreateEvaluation, middleware.EnsurePermission(models.CreateEvaluationPermission))
+	group.GET("", evaluationHandler.GetEvaluations, middleware.EnsurePermission(models.ListEvaluationsPermission))
 }

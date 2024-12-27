@@ -12,6 +12,7 @@ import (
 
 type EvaluationService interface {
 	CreateEvaluation(ctx context.Context, evaluation models.CreateEvaluationPayload) error
+	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error)
 }
 
 type evaluationService struct {
@@ -58,4 +59,26 @@ func (e *evaluationService) CreateEvaluation(ctx context.Context, evaluation mod
 	}
 
 	return nil
+}
+
+func (e *evaluationService) GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error) {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return nil, models.ErrRestaurantNotFound
+	}
+
+	paginatedEvaluations, err := e.evaluationRepository.GetPaginatedEvaluationsByRestaurantID(ctx, *restaurantID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("get paginated evaluations by restaurant ID: %w", err)
+	}
+
+	if paginatedEvaluations == nil {
+		return nil, nil
+	}
+
+	paginatedEvaluationsResponse := models.MapPaginatedResult(paginatedEvaluations, func(evaluation models.Evaluation) *models.EvaluationResponse {
+		return evaluation.ToEvaluationResponse()
+	})
+
+	return paginatedEvaluationsResponse, nil
 }

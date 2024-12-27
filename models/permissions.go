@@ -10,10 +10,11 @@ const (
 	DeliverOrderPermission     Permission = "deliver_order"
 	ListOrdersPermission       Permission = "list_orders"
 	CreateEvaluationPermission Permission = "create_evaluation"
+	ListEvaluationsPermission  Permission = "list_evaluations"
 )
 
 var rolePermissions = map[Role][]Permission{
-	Manager:  {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission},
+	Manager:  {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission, ListEvaluationsPermission},
 	Customer: {CreateOrderPermission, DeliverOrderPermission, CreateEvaluationPermission},
 }
 
