@@ -83,6 +83,7 @@ func main() {
 	internal.Provide(di, client.NewMailtrapClient)
 
 	internal.Provide(di, handler.NewAuthHandler)
+	internal.Provide(di, handler.NewEvaluationHandler)
 	internal.Provide(di, handler.NewOrderHandler)
 	internal.Provide(di, handler.NewProductHandler)
 	internal.Provide(di, handler.NewRestaurantHandler)
@@ -93,6 +94,7 @@ func main() {
 	internal.Provide(di, templates.NewTemplateService)
 
 	internal.Provide(di, services.NewAuthService)
+	internal.Provide(di, services.NewEvaluationService)
 	internal.Provide(di, services.NewOrderItemService)
 	internal.Provide(di, services.NewProductService)
 	internal.Provide(di, services.NewOrderService)
@@ -102,6 +104,7 @@ func main() {
 	internal.Provide(di, services.NewTokenService)
 	internal.Provide(di, services.NewUserService)
 
+	internal.Provide(di, repositories.NewEvaluationRepository)
 	internal.Provide(di, repositories.NewOrderRepository)
 	internal.Provide(di, repositories.NewProductRepository)
 	internal.Provide(di, repositories.NewRestaurantRepository)

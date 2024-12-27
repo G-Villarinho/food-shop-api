@@ -15,3 +15,23 @@ type Evaluation struct {
 func (e *Evaluation) TableName() string {
 	return "Evaluation"
 }
+
+type CreateEvaluationPayload struct {
+	RestaurantID uuid.UUID `json:"restaurantId" validate:"required"`
+	Comment      string    `json:"comment" validate:"required"`
+	Rating       int       `json:"rating" validate:"required,gte=1,lte=5"`
+}
+
+func (c *CreateEvaluationPayload) ToEvaluation(custommerID uuid.UUID) *Evaluation {
+	ID, _ := uuid.NewV7()
+
+	return &Evaluation{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
+		CustommerID:  custommerID,
+		RestaurantID: c.RestaurantID,
+		Rating:       c.Rating,
+		Comment:      c.Comment,
+	}
+}

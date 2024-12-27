@@ -11,4 +11,5 @@ func SetupRoutes(e *echo.Echo, di *internal.Di) {
 	setupRestaurantRoutes(e, di)
 	setupOrderRoutes(e, di)
 	setupProductRoutes(e, di)
+	setupEvaluationRoutes(e, di)
 }
