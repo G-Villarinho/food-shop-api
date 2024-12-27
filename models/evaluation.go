@@ -45,12 +45,11 @@ type EvaluationPagination struct {
 }
 
 type EvaluationResponse struct {
-	ID             uuid.UUID `json:"id"`
-	CustommerName  string    `json:"custommerName"`
-	RestaurantName string    `json:"restaurantName"`
-	Rating         int       `json:"rating"`
-	Comment        string    `json:"comment"`
-	CreatedAt      string    `json:"createdAt"`
+	ID            uuid.UUID `json:"id"`
+	CustommerName string    `json:"custommerName"`
+	Rating        int       `json:"rating"`
+	Comment       string    `json:"comment"`
+	CreatedAt     string    `json:"createdAt"`
 }
 
 func (c *CreateEvaluationPayload) ToEvaluation(custommerID uuid.UUID) *Evaluation {
@@ -69,11 +68,10 @@ func (c *CreateEvaluationPayload) ToEvaluation(custommerID uuid.UUID) *Evaluatio
 
 func (e *Evaluation) ToEvaluationResponse() *EvaluationResponse {
 	return &EvaluationResponse{
-		ID:             e.ID,
-		CustommerName:  e.Custommer.FullName,
-		RestaurantName: e.Restaurant.Name,
-		Rating:         e.Rating,
-		Comment:        e.Comment,
-		CreatedAt:      e.CreatedAt.Format("2006-01-02 15:04:05"),
+		ID:            e.ID,
+		CustommerName: e.Custommer.FullName,
+		Rating:        e.Rating,
+		Comment:       e.Comment,
+		CreatedAt:     e.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
