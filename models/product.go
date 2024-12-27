@@ -22,7 +22,7 @@ type Product struct {
 }
 
 func (p *Product) TableName() string {
-	return "Product"
+	return "Products"
 }
 
 type PopularProduct struct {

@@ -74,12 +74,12 @@ func (p *productRepository) GetPopularProducts(ctx context.Context, restaurantID
 	var popularProducts []models.PopularProduct
 
 	if err := p.DB.WithContext(ctx).
-		Table("`OrderItem`").
-		Select("`Product`.`name` as name, COUNT(`OrderItem`.`id`) as count").
-		Joins("LEFT JOIN `Order` ON `Order`.`id` = `OrderItem`.`OrderID`").
-		Joins("LEFT JOIN `Product` ON `Product`.`id` = `OrderItem`.`ProductID`").
-		Where("`Order`.`RestaurantID` = ?", restaurantID).
-		Group("`Product`.`name`").
+		Table("OrderItems").
+		Select("Products.name as name, COUNT(OrderItems.id) as count").
+		Joins("LEFT JOIN Orders ON Order.Id = OrderItems.OrderID").
+		Joins("LEFT JOIN Products ON Products.Id = OrderItems.ProductID").
+		Where("Orders.RestaurantID = ?", restaurantID).
+		Group("Products.`name`").
 		Order("count DESC").
 		Limit(limit).
 		Scan(&popularProducts).Error; err != nil {

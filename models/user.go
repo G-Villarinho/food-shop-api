@@ -37,7 +37,7 @@ type User struct {
 }
 
 func (u *User) TableName() string {
-	return "User"
+	return "Users"
 }
 
 type CreateUserPayload struct {

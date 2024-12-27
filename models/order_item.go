@@ -15,7 +15,7 @@ type OrderItem struct {
 }
 
 func (o *OrderItem) TableName() string {
-	return "OrderItem"
+	return "OrderItems"
 }
 
 type CreateOrderItemPayload struct {

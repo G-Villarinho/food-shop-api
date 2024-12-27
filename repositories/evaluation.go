@@ -48,12 +48,12 @@ func (e *evaluationRepository) GetPaginatedEvaluationsByRestaurantID(ctx context
 		Where("RestaurantID = ?", restaurantID)
 
 	if pagination.Rating != nil {
-		query = query.Where("Evaluation.Rating = ?", *pagination.Rating)
+		query = query.Where("Evaluations.Rating = ?", *pagination.Rating)
 	}
 
 	if pagination.CustomerName != nil {
-		query = query.Joins("JOIN User ON User.Id = Evaluation.CustommerID").
-			Where("User.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.CustomerName))
+		query = query.Joins("JOIN User ON Users.Id = Evaluations.CustommerID").
+			Where("Users.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.CustomerName))
 	}
 
 	evaluations, err := paginate[models.Evaluation](query, &pagination.Pagination, &models.Evaluation{})

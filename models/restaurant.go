@@ -20,7 +20,7 @@ type Restaurant struct {
 }
 
 func (r *Restaurant) TableName() string {
-	return "Restaurant"
+	return "Restaurants"
 }
 
 type CreateRestaurantPayload struct {

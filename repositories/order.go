@@ -60,7 +60,7 @@ func (o *orderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, 
 		Where("RestaurantID = ?", restaurantID)
 
 	if pagination.Status != nil {
-		query = query.Where("Order.Status = ?", *pagination.Status)
+		query = query.Where("Orders.Status = ?", *pagination.Status)
 	}
 
 	if pagination.OrderID != nil {
@@ -68,8 +68,8 @@ func (o *orderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, 
 	}
 
 	if pagination.CustomerName != nil {
-		query = query.Joins("JOIN User ON User.Id = Order.CustommerID").
-			Where("User.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.CustomerName))
+		query = query.Joins("JOIN Users ON Users.Id = Orders.CustommerID").
+			Where("Users.FullName LIKE ?", fmt.Sprintf("%%%s%%", *pagination.CustomerName))
 	}
 
 	orders, err := paginate[models.Order](query, &pagination.Pagination, &models.Order{})

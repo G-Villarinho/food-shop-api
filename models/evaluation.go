@@ -1,15 +1,20 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"database/sql"
+
+	"github.com/google/uuid"
+)
 
 type Evaluation struct {
 	BaseModel
-	CustommerID  uuid.UUID  `gorm:"column:CustommerID;type:char(36);not null"`
-	RestaurantID uuid.UUID  `gorm:"column:RestaurantID;type:char(36);not null"`
-	Custommer    User       `gorm:"foreignKey:CustommerID;references:ID;OnDelete:CASCADE"`
-	Restaurant   Restaurant `gorm:"foreignKey:RestaurantID;references:ID;OnDelete:CASCADE"`
-	Rating       int        `gorm:"column:Rating;type:int;not null"`
-	Comment      string     `gorm:"column:Comment;type:text;not null"`
+	CustommerID  uuid.UUID      `gorm:"column:CustommerID;type:char(36);not null"`
+	RestaurantID uuid.UUID      `gorm:"column:RestaurantID;type:char(36);not null"`
+	Custommer    User           `gorm:"foreignKey:CustommerID;references:ID;OnDelete:CASCADE"`
+	Restaurant   Restaurant     `gorm:"foreignKey:RestaurantID;references:ID;OnDelete:CASCADE"`
+	Rating       int            `gorm:"column:Rating;type:int;not null"`
+	Comment      string         `gorm:"column:Comment;type:text;not null"`
+	Answer       sql.NullString `gorm:"column:Answer;type:text;null;default:null"`
 }
 
 func (e *Evaluation) TableName() string {
@@ -18,8 +23,13 @@ func (e *Evaluation) TableName() string {
 
 type CreateEvaluationPayload struct {
 	RestaurantID uuid.UUID `json:"restaurantId" validate:"required"`
-	Comment      string    `json:"comment" validate:"required"`
+	Comment      string    `json:"comment" validate:"required,max=500"`
 	Rating       int       `json:"rating" validate:"required,gte=1,lte=5"`
+}
+
+type UpdateAnswerPayload struct {
+	EvaluationID uuid.UUID `json:"evaluationId" validate:"required"`
+	Answer       string    `json:"answer" validate:"required,max=500"`
 }
 
 type EvaluationPagination struct {

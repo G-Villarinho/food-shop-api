@@ -59,7 +59,7 @@ func (r *restaurantRepository) GetRestaurantIDByUserID(ctx context.Context, user
 	var restaurantIDStr string
 	if err := r.DB.
 		WithContext(ctx).
-		Table("Restaurant").
+		Table("Restaurants").
 		Select("Id").
 		Where("ManagerID = ?", userID).
 		Scan(&restaurantIDStr).Error; err != nil {

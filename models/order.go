@@ -37,7 +37,7 @@ type Order struct {
 }
 
 func (o *Order) TableName() string {
-	return "Order"
+	return "Orders"
 }
 
 type CreateOrderPayload struct {
