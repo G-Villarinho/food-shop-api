@@ -19,6 +19,7 @@ type EvaluationHandler interface {
 	CreateEvaluation(ctx echo.Context) error
 	GetEvaluations(ctx echo.Context) error
 	UpdateAnswer(ctx echo.Context) error
+	GetEvaluationSumary(ctx echo.Context) error
 }
 
 type evaluationHandler struct {
@@ -141,4 +142,28 @@ func (e *evaluationHandler) UpdateAnswer(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (e *evaluationHandler) GetEvaluationSumary(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "evaluation"),
+		slog.String("func", "GetEvaluationSumary"),
+	)
+
+	response, err := e.EvaluationService.GetEvaluationSumary(ctx.Request().Context())
+	if err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrRestaurantNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurante não encontrado")
+		}
+
+		if errors.Is(err, models.ErrEvaluationNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Avaliações não encontradas para o seu restaurante")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }

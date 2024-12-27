@@ -21,4 +21,5 @@ func setupEvaluationRoutes(e *echo.Echo, di *internal.Di) {
 	group.POST("", evaluationHandler.CreateEvaluation, middleware.EnsurePermission(models.CreateEvaluationPermission))
 	group.GET("", evaluationHandler.GetEvaluations, middleware.EnsurePermission(models.ListEvaluationsPermission))
 	group.PATCH("/answer", evaluationHandler.UpdateAnswer, middleware.EnsurePermission(models.UpdateEvaluationAnswerPermission))
+	group.GET("/summary", evaluationHandler.GetEvaluationSumary, middleware.EnsurePermission(models.GetEvaluationSummaryPermission))
 }

@@ -12,6 +12,7 @@ const (
 	CreateEvaluationPermission       Permission = "create_evaluation"
 	ListEvaluationsPermission        Permission = "list_evaluations"
 	UpdateEvaluationAnswerPermission Permission = "update_evaluation_answer"
+	GetEvaluationSummaryPermission   Permission = "get_evaluation_summary"
 )
 
 var rolePermissions = map[Role][]Permission{

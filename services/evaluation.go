@@ -14,6 +14,7 @@ type EvaluationService interface {
 	CreateEvaluation(ctx context.Context, evaluation models.CreateEvaluationPayload) error
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error)
 	UpdateAnswer(ctx context.Context, payload models.UpdateAnswerPayload) error
+	GetEvaluationSumary(ctx context.Context) (*models.EvaluationSummaryResponse, error)
 }
 
 type evaluationService struct {
@@ -108,4 +109,52 @@ func (e *evaluationService) UpdateAnswer(ctx context.Context, payload models.Upd
 	}
 
 	return nil
+}
+
+func (e *evaluationService) GetEvaluationSumary(ctx context.Context) (*models.EvaluationSummaryResponse, error) {
+	restaurantID, ok := ctx.Value(internal.RestaurantIDKey).(*uuid.UUID)
+	if !ok {
+		return nil, models.ErrRestaurantNotFound
+	}
+
+	summaries, err := e.evaluationRepository.GetEvaluationSumaryByRestaurantID(ctx, *restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("get evaluation summary: %w", err)
+	}
+
+	if summaries == nil {
+		return nil, models.ErrEvaluationNotFound
+	}
+
+	return e.buildEvaluationSummary(summaries), nil
+}
+
+func (e *evaluationService) buildEvaluationSummary(summaries []models.EvaluationSummary) *models.EvaluationSummaryResponse {
+	totalMap := make(map[int]int)
+	totalStars := 0
+	totalCount := 0
+
+	for _, summary := range summaries {
+		totalMap[summary.Rating] = summary.Total
+		totalStars += summary.Rating * summary.Total
+		totalCount += summary.Total
+	}
+
+	var starSummary []models.StarCount
+	for i := 1; i <= 5; i++ {
+		starSummary = append(starSummary, models.StarCount{
+			Stars:      i,
+			TotalStars: totalMap[i],
+		})
+	}
+
+	var average float64
+	if totalCount > 0 {
+		average = float64(totalStars) / float64(totalCount)
+	}
+
+	return &models.EvaluationSummaryResponse{
+		StarSummary: starSummary,
+		Average:     average,
+	}
 }

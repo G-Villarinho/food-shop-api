@@ -16,6 +16,7 @@ type EvaluationRepository interface {
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.EvaluationPagination) (*models.PaginatedResponse[models.Evaluation], error)
 	UpdateAnswer(ctx context.Context, evaluationID uuid.UUID, answer string) error
 	GetEvaluationByID(ctx context.Context, evaluationID uuid.UUID) (*models.Evaluation, error)
+	GetEvaluationSumaryByRestaurantID(ctx context.Context, restaurantID uuid.UUID) ([]models.EvaluationSummary, error)
 }
 
 type evaluationRepository struct {
@@ -63,6 +64,7 @@ func (e *evaluationRepository) GetPaginatedEvaluationsByRestaurantID(ctx context
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 
@@ -88,8 +90,29 @@ func (e *evaluationRepository) GetEvaluationByID(ctx context.Context, evaluation
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 
 	return &evaluation, nil
+}
+
+func (e *evaluationRepository) GetEvaluationSumaryByRestaurantID(ctx context.Context, restaurantID uuid.UUID) ([]models.EvaluationSummary, error) {
+	var evaluationSummary []models.EvaluationSummary
+
+	if err := e.DB.WithContext(ctx).
+		Model(&models.Evaluation{}).
+		Select("Rating, COUNT(*) as Total").
+		Where("RestaurantID = ?", restaurantID).
+		Group("Rating").
+		Order("Rating").
+		Scan(&evaluationSummary).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return evaluationSummary, nil
 }

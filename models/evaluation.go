@@ -49,7 +49,23 @@ type EvaluationResponse struct {
 	CustommerName string    `json:"custommerName"`
 	Rating        int       `json:"rating"`
 	Comment       string    `json:"comment"`
+	Answer        *string   `json:"answer"`
 	CreatedAt     string    `json:"createdAt"`
+}
+
+type EvaluationSummary struct {
+	Rating int
+	Total  int
+}
+
+type StarCount struct {
+	Stars      int `json:"rating"`
+	TotalStars int `json:"count"`
+}
+
+type EvaluationSummaryResponse struct {
+	StarSummary []StarCount `json:"starSummary"`
+	Average     float64     `json:"average"`
 }
 
 func (c *CreateEvaluationPayload) ToEvaluation(custommerID uuid.UUID) *Evaluation {
@@ -72,6 +88,7 @@ func (e *Evaluation) ToEvaluationResponse() *EvaluationResponse {
 		CustommerName: e.Custommer.FullName,
 		Rating:        e.Rating,
 		Comment:       e.Comment,
+		Answer:        &e.Answer.String,
 		CreatedAt:     e.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
