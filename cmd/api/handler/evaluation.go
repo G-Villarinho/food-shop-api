@@ -18,6 +18,7 @@ import (
 type EvaluationHandler interface {
 	CreateEvaluation(ctx echo.Context) error
 	GetEvaluations(ctx echo.Context) error
+	UpdateAnswer(ctx echo.Context) error
 }
 
 type evaluationHandler struct {
@@ -102,4 +103,42 @@ func (e *evaluationHandler) GetEvaluations(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, response)
 
+}
+
+func (e *evaluationHandler) UpdateAnswer(ctx echo.Context) error {
+	log := slog.With(
+		slog.String("handler", "evaluation"),
+		slog.String("func", "UpdateAnswer"),
+	)
+
+	var payload models.UpdateAnswerPayload
+	if err := jsoniter.NewDecoder(ctx.Request().Body).Decode(&payload); err != nil {
+		log.Warn("Error to decode JSON payload", slog.String("error", err.Error()))
+		return responses.CannotBindPayloadAPIErrorResponse(ctx)
+	}
+
+	if err := validation.ValidateStruct(payload); err != nil {
+		log.Warn("Error to validate JSON payload")
+		return responses.NewValidationErrorResponse(ctx, err)
+	}
+
+	if err := e.EvaluationService.UpdateAnswer(ctx.Request().Context(), payload); err != nil {
+		log.Error(err.Error())
+
+		if errors.Is(err, models.ErrRestaurantNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Restaurante não encontrado")
+		}
+
+		if errors.Is(err, models.ErrEvaluationNotFound) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusNotFound, "not_found", "Avaliação não encontrada para o seu restaurante")
+		}
+
+		if errors.Is(err, models.ErrEvaluationDoesNotBelongToRestaurant) {
+			return responses.NewCustomValidationAPIErrorResponse(ctx, http.StatusForbidden, "forbidden", "A avaliação não pertence ao seu restaurante")
+		}
+
+		return responses.InternalServerAPIErrorResponse(ctx)
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
 }

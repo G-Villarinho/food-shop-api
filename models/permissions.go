@@ -3,18 +3,20 @@ package models
 type Permission string
 
 const (
-	CreateOrderPermission      Permission = "create_order"
-	CancelOrderPermission      Permission = "cancel_order"
-	ApproveOrderPermission     Permission = "approve_order"
-	DispatchOrderPermission    Permission = "dispatch_order"
-	DeliverOrderPermission     Permission = "deliver_order"
-	ListOrdersPermission       Permission = "list_orders"
-	CreateEvaluationPermission Permission = "create_evaluation"
-	ListEvaluationsPermission  Permission = "list_evaluations"
+	CreateOrderPermission            Permission = "create_order"
+	CancelOrderPermission            Permission = "cancel_order"
+	ApproveOrderPermission           Permission = "approve_order"
+	DispatchOrderPermission          Permission = "dispatch_order"
+	DeliverOrderPermission           Permission = "deliver_order"
+	ListOrdersPermission             Permission = "list_orders"
+	CreateEvaluationPermission       Permission = "create_evaluation"
+	ListEvaluationsPermission        Permission = "list_evaluations"
+	UpdateEvaluationAnswerPermission Permission = "update_evaluation_answer"
 )
 
 var rolePermissions = map[Role][]Permission{
-	Manager:  {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission, ListEvaluationsPermission},
+	Manager: {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission, ListEvaluationsPermission,
+		UpdateEvaluationAnswerPermission},
 	Customer: {CreateOrderPermission, DeliverOrderPermission, CreateEvaluationPermission},
 }
 

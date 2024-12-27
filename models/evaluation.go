@@ -2,8 +2,14 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrEvaluationNotFound                  = errors.New("evaluation not found in the database")
+	ErrEvaluationDoesNotBelongToRestaurant = errors.New("evaluation does not belong to the restaurant")
 )
 
 type Evaluation struct {

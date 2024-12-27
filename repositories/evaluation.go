@@ -14,6 +14,8 @@ import (
 type EvaluationRepository interface {
 	CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.EvaluationPagination) (*models.PaginatedResponse[models.Evaluation], error)
+	UpdateAnswer(ctx context.Context, evaluationID uuid.UUID, answer string) error
+	GetEvaluationByID(ctx context.Context, evaluationID uuid.UUID) (*models.Evaluation, error)
 }
 
 type evaluationRepository struct {
@@ -65,4 +67,29 @@ func (e *evaluationRepository) GetPaginatedEvaluationsByRestaurantID(ctx context
 	}
 
 	return evaluations, nil
+}
+
+func (e *evaluationRepository) UpdateAnswer(ctx context.Context, evaluationID uuid.UUID, answer string) error {
+	if err := e.DB.WithContext(ctx).
+		Model(&models.Evaluation{}).
+		Where("Id = ?", evaluationID).
+		Update("Answer", answer).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *evaluationRepository) GetEvaluationByID(ctx context.Context, evaluationID uuid.UUID) (*models.Evaluation, error) {
+	var evaluation models.Evaluation
+	if err := e.DB.WithContext(ctx).
+		Where("Id = ?", evaluationID).
+		First(&evaluation).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &evaluation, nil
 }
