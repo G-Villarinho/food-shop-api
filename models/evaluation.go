@@ -59,8 +59,8 @@ type EvaluationSummary struct {
 }
 
 type StarCount struct {
-	Stars      int `json:"rating"`
-	TotalStars int `json:"count"`
+	Stars      int `json:"stars"`
+	TotalStars int `json:"totalStars"`
 }
 
 type EvaluationSummaryResponse struct {
