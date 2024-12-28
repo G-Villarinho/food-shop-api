@@ -1,10 +1,11 @@
 DOCKER_COMPOSE_FILE = docker-compose.yml
 APP_NAME = parallelizing-app
 MAIN_FILE = cmd/api/main.go
+EMAIL_WORKER_FILE = cmd/workers/send_email/main.go
 PRIVATE_KEY_FILE := ec_private_key.pem
 PUBLIC_KEY_FILE := ec_public_key.pem
 
-.PHONY: docker-up docker-down run-app docker-clean start docker-rebuild generate-keys
+.PHONY: docker-up docker-down run-app docker-clean start docker-rebuild generate-keys migration run-email-worker
 
 docker-up:
 	@echo "Subindo os serviços do Docker..."
@@ -24,13 +25,13 @@ docker-clean:
 	@echo "Removendo os contêineres e volumes..."
 	docker-compose -f $(DOCKER_COMPOSE_FILE) down --volumes --remove-orphans	
 
-run-app:
-	@echo "Iniciando a aplicação Go..."
-	go run $(MAIN_FILE)
+run-email-worker:
+	@echo "Iniciando worker de envio de e-mails..."
+	go run $(EMAIL_WORKER_FILE)
 
 start:
 	@echo "Iniciando aplicação Go..."
-	make run-app
+	go run $(MAIN_FILE)
 
 migration:
 	@echo "Rodando as migrações..."
