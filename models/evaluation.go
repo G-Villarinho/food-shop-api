@@ -24,7 +24,7 @@ type Evaluation struct {
 }
 
 func (e *Evaluation) TableName() string {
-	return "Evaluation"
+	return "Evaluations"
 }
 
 type CreateEvaluationPayload struct {

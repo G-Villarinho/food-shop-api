@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/G-Villarinho/food-shop-api/internal"
 	"github.com/G-Villarinho/food-shop-api/models"
@@ -138,6 +139,7 @@ func (e *evaluationService) buildEvaluationSummary(summaries []models.Evaluation
 	totalStars := 0
 	totalCount := 0
 
+	// Processa os resultados do repositório
 	for _, summary := range summaries {
 		totalMap[summary.Rating] = summary.Total
 		totalStars += summary.Rating * summary.Total
@@ -157,6 +159,10 @@ func (e *evaluationService) buildEvaluationSummary(summaries []models.Evaluation
 			Percentage: percentage,
 		})
 	}
+
+	sort.Slice(starSummary, func(i, j int) bool {
+		return starSummary[i].Stars > starSummary[j].Stars
+	})
 
 	var average float64
 	if totalCount > 0 {

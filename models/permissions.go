@@ -17,7 +17,7 @@ const (
 
 var rolePermissions = map[Role][]Permission{
 	Manager: {ListOrdersPermission, CancelOrderPermission, ApproveOrderPermission, DispatchOrderPermission, ListEvaluationsPermission,
-		UpdateEvaluationAnswerPermission},
+		UpdateEvaluationAnswerPermission, GetEvaluationSummaryPermission},
 	Customer: {CreateOrderPermission, DeliverOrderPermission, CreateEvaluationPermission},
 }
 
