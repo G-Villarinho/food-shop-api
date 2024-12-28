@@ -146,9 +146,15 @@ func (e *evaluationService) buildEvaluationSummary(summaries []models.Evaluation
 
 	var starSummary []models.StarCount
 	for i := 1; i <= 5; i++ {
+		percentage := 0.0
+		if totalCount > 0 {
+			percentage = (float64(totalMap[i]) / float64(totalCount)) * 100
+		}
+
 		starSummary = append(starSummary, models.StarCount{
 			Stars:      i,
 			TotalStars: totalMap[i],
+			Percentage: percentage,
 		})
 	}
 
@@ -160,5 +166,6 @@ func (e *evaluationService) buildEvaluationSummary(summaries []models.Evaluation
 	return &models.EvaluationSummaryResponse{
 		StarSummary: starSummary,
 		Average:     average,
+		TotalCount:  totalCount,
 	}
 }

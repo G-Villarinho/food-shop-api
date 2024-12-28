@@ -59,13 +59,15 @@ type EvaluationSummary struct {
 }
 
 type StarCount struct {
-	Stars      int `json:"stars"`
-	TotalStars int `json:"totalStars"`
+	Stars      int     `json:"stars"`
+	TotalStars int     `json:"totalStars"`
+	Percentage float64 `json:"percentage"`
 }
 
 type EvaluationSummaryResponse struct {
 	StarSummary []StarCount `json:"starSummary"`
 	Average     float64     `json:"average"`
+	TotalCount  int         `json:"totalCount"`
 }
 
 func (c *CreateEvaluationPayload) ToEvaluation(custommerID uuid.UUID) *Evaluation {

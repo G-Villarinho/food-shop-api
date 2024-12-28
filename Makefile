@@ -27,11 +27,11 @@ docker-clean:
 
 run-email-worker:
 	@echo "Iniciando worker de envio de e-mails..."
-	go run $(EMAIL_WORKER_FILE)
+	@go run $(EMAIL_WORKER_FILE)
 
 start:
 	@echo "Iniciando aplicação Go..."
-	go run $(MAIN_FILE)
+	@go run $(MAIN_FILE)
 
 migration:
 	@echo "Rodando as migrações..."
