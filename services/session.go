@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=SessionService --output=../mocks --outpkg=mocks
 type SessionService interface {
 	CreateSession(ctx context.Context, userID uuid.UUID, restaurantID *uuid.UUID, role models.Role) (*models.Session, error)
 	GetSessionByToken(ctx context.Context, token string) (*models.Session, error)

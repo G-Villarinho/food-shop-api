@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=ProductService --output=../mocks --outpkg=mocks
 type ProductService interface {
 	GetPopularProducts(ctx context.Context) ([]models.PopularProductResponse, error)
 }

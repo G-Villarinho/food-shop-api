@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --name=EvaluationRepository --output=../mocks --outpkg=mocks
 type EvaluationRepository interface {
 	CreateEvaluation(ctx context.Context, evaluation models.Evaluation) error
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.EvaluationPagination) (*models.PaginatedResponse[models.Evaluation], error)

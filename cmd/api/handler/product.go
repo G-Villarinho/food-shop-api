@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=ProductHandler --output=../../../mocks --outpkg=mocks
 type ProductHandler interface {
 	GetPopularProducts(ctx echo.Context) error
 }

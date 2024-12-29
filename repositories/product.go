@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --name=ProductRepository --output=../mocks --outpkg=mocks
 type ProductRepository interface {
 	CreateProduct(ctx context.Context, product models.Product) error
 	GetProductByID(ctx context.Context, ID uuid.UUID) (*models.Product, error)

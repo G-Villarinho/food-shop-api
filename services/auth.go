@@ -17,6 +17,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
+//go:generate mockery --name=AuthService --output=../mocks --outpkg=mocks
 type AuthService interface {
 	SignIn(ctx context.Context, email string) error
 	VeryfyMagicLink(ctx context.Context, code uuid.UUID) (string, error)

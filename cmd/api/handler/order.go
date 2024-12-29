@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=OrderHandler --output=../../../mocks --outpkg=mocks
 type OrderHandler interface {
 	GetOrders(ctx echo.Context) error
 	CancelOrder(ctx echo.Context) error

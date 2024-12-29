@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=EvaluationService --output=../mocks --outpkg=mocks
 type EvaluationService interface {
 	CreateEvaluation(ctx context.Context, payload models.CreateEvaluationPayload) (*models.EvaluationResponse, error)
 	GetPaginatedEvaluationsByRestaurantID(ctx context.Context, pagination *models.EvaluationPagination) (*models.PaginatedResponse[*models.EvaluationResponse], error)

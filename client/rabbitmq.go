@@ -8,6 +8,7 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
+//go:generate mockery --name=RabbitMQClient --output=../mocks --outpkg=mocks
 type RabbitMQClient interface {
 	Connect() error
 	Publish(queueName string, message []byte) error

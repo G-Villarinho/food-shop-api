@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=OrderItemService --output=../mocks --outpkg=mocks
 type OrderItemService interface {
 	ValidateAndCalculateOrderItems(ctx context.Context, products []models.Product, items []models.CreateOrderItemPayload) (*models.OrderItemSummary, error)
 }

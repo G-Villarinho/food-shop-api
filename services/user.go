@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=UserService --output=../mocks --outpkg=mocks
 type UserService interface {
 	CreateUser(ctx context.Context, payload models.CreateUserPayload, role models.Role) (uuid.UUID, error)
 	GetUser(ctx context.Context) (*models.UserResponse, error)

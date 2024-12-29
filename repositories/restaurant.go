@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --name=RestaurantRepository --output=../mocks --outpkg=mocks
 type RestaurantRepository interface {
 	CreateRestaurant(ctx context.Context, restaurant models.Restaurant) error
 	GetRestaurantByID(ctx context.Context, ID uuid.UUID) (*models.Restaurant, error)

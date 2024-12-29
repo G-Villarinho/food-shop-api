@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=RestaurantHandler --output=../../../mocks --outpkg=mocks
 type RestaurantHandler interface {
 	CreateRestaurant(ctx echo.Context) error
 	CreateOrder(ctx echo.Context) error

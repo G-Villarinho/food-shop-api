@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=UserHandler --output=../../../mocks --outpkg=mocks
 type UserHandler interface {
 	CreateUser(ctx echo.Context) error
 	GetUser(ctx echo.Context) error

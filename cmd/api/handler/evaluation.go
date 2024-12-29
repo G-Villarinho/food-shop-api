@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=EvaluationHandler --output=../../../mocks --outpkg=mocks
 type EvaluationHandler interface {
 	CreateEvaluation(ctx echo.Context) error
 	GetEvaluations(ctx echo.Context) error

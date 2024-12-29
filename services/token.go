@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=TokenService --output=../mocks --outpkg=mocks
 type TokenService interface {
 	CreateToken(userID uuid.UUID, sessionID uuid.UUID) (string, error)
 	ExtractSessionID(token string) (uuid.UUID, error)

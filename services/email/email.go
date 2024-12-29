@@ -11,6 +11,7 @@ import (
 	"github.com/G-Villarinho/food-shop-api/templates"
 )
 
+//go:generate mockery --name=EmailService --output=../../mocks --outpkg=mocks
 type EmailService interface {
 	SendEmail(ctx context.Context, task models.EmailQueueTask) error
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate mockery --name=AuthHandler --output=../../../mocks --outpkg=mocks
 type AuthHandler interface {
 	SignIn(ctx echo.Context) error
 	VeryfyMagicLink(ctx echo.Context) error

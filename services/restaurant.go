@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=RestaurantService --output=../mocks --outpkg=mocks
 type RestaurantService interface {
 	CreateRestaurant(ctx context.Context, payload models.CreateRestaurantPayload) error
 	CreateOrder(ctx context.Context, restaurantID uuid.UUID, payload models.CreateOrderPayload) error

@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name=OrderService --output=../mocks --outpkg=mocks
 type OrderService interface {
 	CreateOrder(ctx context.Context, custommerID, restaurantID uuid.UUID, payload models.CreateOrderPayload) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, pagination *models.OrderPagination) (*models.PaginatedResponse[*models.OrderResponse], error)

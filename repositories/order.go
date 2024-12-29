@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --name=OrderRepository --output=../mocks --outpkg=mocks
 type OrderRepository interface {
 	CreateOrderWithItems(ctx context.Context, order *models.Order, items []models.OrderItem) error
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error)

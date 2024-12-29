@@ -10,6 +10,7 @@ import (
 	"github.com/G-Villarinho/food-shop-api/internal"
 )
 
+//go:generate mockery --name=TemplateService --output=../mocks --outpkg=mocks
 type TemplateService interface {
 	RenderTemplate(templateName string, params map[string]string) (string, error)
 }

@@ -33,6 +33,7 @@ type MailtrapResponse struct {
 	Message string `json:"message"`
 }
 
+//go:generate mockery --name=MailtrapClient --output=../mocks --outpkg=mocks
 type MailtrapClient interface {
 	SendEmail(ctx context.Context, payload MailtrapPayload) error
 }

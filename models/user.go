@@ -56,6 +56,12 @@ type UserResponse struct {
 
 func (payload *CreateUserPayload) ToUser(Role Role) *User {
 	ID, _ := uuid.NewV7()
+
+	phone := sql.NullString{}
+	if payload.Phone != nil {
+		phone = sql.NullString{String: *payload.Phone, Valid: true}
+	}
+
 	return &User{
 		BaseModel: BaseModel{
 			ID: ID,
@@ -63,7 +69,7 @@ func (payload *CreateUserPayload) ToUser(Role Role) *User {
 		FullName: payload.FullName,
 		Email:    payload.Email,
 		Role:     Role,
-		Phone:    sql.NullString{String: *payload.Phone, Valid: payload.Phone != nil},
+		Phone:    phone,
 	}
 }
 
