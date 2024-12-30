@@ -132,15 +132,14 @@ func (e *evaluationService) GetEvaluationSumary(ctx context.Context) (*models.Ev
 		return nil, models.ErrEvaluationNotFound
 	}
 
-	return e.buildEvaluationSummary(summaries), nil
+	return buildEvaluationSummary(summaries), nil
 }
 
-func (e *evaluationService) buildEvaluationSummary(summaries []models.EvaluationSummary) *models.EvaluationSummaryResponse {
+func buildEvaluationSummary(summaries []models.EvaluationSummary) *models.EvaluationSummaryResponse {
 	totalMap := make(map[int]int)
 	totalStars := 0
 	totalCount := 0
 
-	// Processa os resultados do repositório
 	for _, summary := range summaries {
 		totalMap[summary.Rating] = summary.Total
 		totalStars += summary.Rating * summary.Total
