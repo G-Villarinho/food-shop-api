@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/G-Villarinho/food-shop-api/cache"
+	"github.com/G-Villarinho/food-shop-api/internal"
 	"github.com/G-Villarinho/food-shop-api/mocks"
 	"github.com/G-Villarinho/food-shop-api/models"
 	"github.com/google/uuid"
@@ -143,5 +145,171 @@ func TestUserService_CreateUser(t *testing.T) {
 		userRepository.AssertCalled(t, "GetUserByEmail", ctx, payload.Email)
 		userRepository.AssertCalled(t, "CreateUser", ctx, mock.Anything)
 		authService.AssertCalled(t, "SignIn", ctx, payload.Email)
+	})
+}
+
+func TestUserService_GetUser(t *testing.T) {
+	ctx := context.Background()
+
+	// Helper para configurar mocks e serviço
+	setup := func() (*userService, *mocks.UserRepository, *mocks.CacheService, *mocks.RestaurantRepository) {
+		userRepository := &mocks.UserRepository{}
+		cacheService := &mocks.CacheService{}
+		restaurantRepository := &mocks.RestaurantRepository{}
+		authService := &mocks.AuthService{}
+
+		userService := &userService{
+			userRepository:       userRepository,
+			cacheService:         cacheService,
+			restaurantRepository: restaurantRepository,
+			authService:          authService,
+		}
+
+		return userService, userRepository, cacheService, restaurantRepository
+	}
+
+	t.Run("should return user from cache successfully", func(t *testing.T) {
+		userService, _, cacheService, _ := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		expectedResponse := &models.UserResponse{
+			ID:    userID.String(),
+			Email: "test@example.com",
+		}
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Run(func(args mock.Arguments) {
+			arg := args.Get(2).(*models.UserResponse)
+			*arg = *expectedResponse
+		}).Return(nil)
+
+		response, err := userService.GetUser(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResponse, response)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+	})
+
+	t.Run("should fetch user from repository when cache is missed", func(t *testing.T) {
+		userService, userRepository, cacheService, _ := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Return(cache.ErrCacheMiss)
+
+		user := &models.User{
+			BaseModel: models.BaseModel{
+				ID: userID,
+			},
+			Email: "test@example.com",
+			Role:  models.Customer,
+		}
+
+		userRepository.On("GetUserByID", ctx, userID).Return(user, nil)
+		cacheService.On("Set", ctx, getUserKey(userID), mock.Anything, mock.Anything).Return(nil)
+
+		response, err := userService.GetUser(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, user.ToUserResponse(), response)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+		userRepository.AssertCalled(t, "GetUserByID", ctx, userID)
+		cacheService.AssertCalled(t, "Set", ctx, getUserKey(userID), mock.Anything, mock.Anything)
+	})
+
+	t.Run("should return error when cache fetch fails with unexpected error", func(t *testing.T) {
+		userService, _, cacheService, _ := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Return(errors.New("unexpected cache error"))
+
+		response, err := userService.GetUser(ctx)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "get user from cache")
+		assert.Nil(t, response)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+	})
+
+	t.Run("should return error when user is not found in repository", func(t *testing.T) {
+		userService, userRepository, cacheService, _ := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Return(cache.ErrCacheMiss)
+		userRepository.On("GetUserByID", ctx, userID).Return(nil, nil)
+
+		response, err := userService.GetUser(ctx)
+
+		assert.ErrorIs(t, err, models.ErrUserNotFound)
+		assert.Nil(t, response)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+		userRepository.AssertCalled(t, "GetUserByID", ctx, userID)
+	})
+
+	t.Run("should return error when user ID is missing in context", func(t *testing.T) {
+		userService, _, _, _ := setup()
+
+		response, err := userService.GetUser(ctx)
+
+		assert.ErrorIs(t, err, models.ErrUserNotFoundInContext)
+		assert.Nil(t, response)
+	})
+
+	t.Run("should return error when repository fetch fails", func(t *testing.T) {
+		userService, userRepository, cacheService, _ := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Return(cache.ErrCacheMiss)
+		userRepository.On("GetUserByID", ctx, userID).Return(nil, errors.New("repository error"))
+
+		response, err := userService.GetUser(ctx)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "get user by id")
+		assert.Nil(t, response)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+		userRepository.AssertCalled(t, "GetUserByID", ctx, userID)
+	})
+
+	t.Run("should return manager user with restaurant name", func(t *testing.T) {
+		userService, userRepository, cacheService, restaurantRepository := setup()
+
+		userID := uuid.New()
+		ctx := context.WithValue(ctx, internal.UserIDKey, userID)
+
+		cacheService.On("Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse")).Return(cache.ErrCacheMiss)
+
+		user := &models.User{
+			BaseModel: models.BaseModel{
+				ID: userID,
+			},
+			Email: "test@example.com",
+			Role:  models.Manager,
+		}
+
+		restaurant := &models.Restaurant{
+			Name: "Test Restaurant",
+		}
+
+		userRepository.On("GetUserByID", ctx, userID).Return(user, nil)
+		restaurantRepository.On("GetRestaurantByUserID", ctx, userID).Return(restaurant, nil)
+		cacheService.On("Set", ctx, getUserKey(userID), mock.Anything, mock.Anything).Return(nil)
+
+		response, err := userService.GetUser(ctx)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Test Restaurant", response.RestaurantName)
+		cacheService.AssertCalled(t, "Get", ctx, getUserKey(userID), mock.AnythingOfType("*models.UserResponse"))
+		userRepository.AssertCalled(t, "GetUserByID", ctx, userID)
+		restaurantRepository.AssertCalled(t, "GetRestaurantByUserID", ctx, userID)
+		cacheService.AssertCalled(t, "Set", ctx, getUserKey(userID), mock.Anything, mock.Anything)
 	})
 }

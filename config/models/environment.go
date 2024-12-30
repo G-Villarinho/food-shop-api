@@ -1,10 +1,8 @@
 package models
 
-import "crypto/ecdsa"
-
 type Environment struct {
-	PrivateKey       *ecdsa.PrivateKey
-	PublicKey        *ecdsa.PublicKey
+	PrivateKey       string `env:"PRIVATE_KEY"`
+	PublicKey        string `env:"PUBLIC_KEY"`
 	Redis            RedisEnvironment
 	CloudFlare       CloudFlareEnvironment
 	Cache            CacheEnvironment
