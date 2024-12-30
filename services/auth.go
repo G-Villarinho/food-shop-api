@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/G-Villarinho/food-shop-api/cache"
@@ -72,11 +71,6 @@ func NewAuthService(di *internal.Di) (AuthService, error) {
 }
 
 func (a *authService) SignIn(ctx context.Context, email string) error {
-	log := slog.With(
-		slog.String("service", "auth"),
-		slog.String("func", "SignIn"),
-	)
-
 	user, err := a.userRespository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
@@ -97,18 +91,14 @@ func (a *authService) SignIn(ctx context.Context, email string) error {
 		return fmt.Errorf("set magic link: %w", err)
 	}
 
-	go func() {
-		message, err := jsoniter.Marshal(a.emailFactory.CreateSignInMagicLinkEmail(user.Email, user.FullName, magicLink))
-		if err != nil {
-			log.Error("marshal email task", slog.String("error", err.Error()))
-			return
-		}
+	message, err := jsoniter.Marshal(a.emailFactory.CreateSignInMagicLinkEmail(user.Email, user.FullName, magicLink))
+	if err != nil {
+		return fmt.Errorf("marshal email task: %w", err)
+	}
 
-		if err := a.queueService.Publish(QueueSendEmail, message); err != nil {
-			log.Error("publish email task", slog.String("error", err.Error()))
-			return
-		}
-	}()
+	if err := a.queueService.Publish(QueueSendEmail, message); err != nil {
+		return fmt.Errorf("publish email task: %w", err)
+	}
 
 	return nil
 }
@@ -131,10 +121,6 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 		return "", models.ErrUserNotFound
 	}
 
-	if err := a.cacheService.Delete(ctx, getMagicLinkKey(code)); err != nil {
-		return "", fmt.Errorf("delete magic link: %w", err)
-	}
-
 	var restaurantID *uuid.UUID
 	if user.Role == models.Manager {
 		restaurantID, err = a.restaurantRepository.GetRestaurantIDByUserID(ctx, user.ID)
@@ -146,6 +132,10 @@ func (a *authService) VeryfyMagicLink(ctx context.Context, code uuid.UUID) (stri
 	session, err := a.sessionService.CreateSession(ctx, user.ID, restaurantID, user.Role)
 	if err != nil {
 		return "", fmt.Errorf("create session: %w", err)
+	}
+
+	if err := a.cacheService.Delete(ctx, getMagicLinkKey(code)); err != nil {
+		return "", fmt.Errorf("delete magic link: %w", err)
 	}
 
 	return session.Token, nil
