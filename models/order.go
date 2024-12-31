@@ -40,6 +40,11 @@ func (o *Order) TableName() string {
 	return "Orders"
 }
 
+type OrderPerMonth struct {
+	MonthWithYear string
+	Amount        int
+}
+
 type CreateOrderPayload struct {
 	Items []CreateOrderItemPayload `json:"items" validate:"required,dive,required"`
 }

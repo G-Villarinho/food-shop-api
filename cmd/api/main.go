@@ -84,6 +84,8 @@ func main() {
 
 	internal.Provide(di, handler.NewAuthHandler)
 	internal.Provide(di, handler.NewEvaluationHandler)
+	internal.Provide(di, handler.NewMenuHandler)
+	internal.Provide(di, handler.NewMetricsHandler)
 	internal.Provide(di, handler.NewOrderHandler)
 	internal.Provide(di, handler.NewProductHandler)
 	internal.Provide(di, handler.NewRestaurantHandler)
@@ -95,6 +97,8 @@ func main() {
 
 	internal.Provide(di, services.NewAuthService)
 	internal.Provide(di, services.NewEvaluationService)
+	internal.Provide(di, services.NewMenuService)
+	internal.Provide(di, services.NewMetricsService)
 	internal.Provide(di, services.NewOrderItemService)
 	internal.Provide(di, services.NewProductService)
 	internal.Provide(di, services.NewOrderService)

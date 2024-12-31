@@ -17,6 +17,7 @@ type OrderRepository interface {
 	GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error)
 	UpdateStatus(ctx context.Context, orderID uuid.UUID, status models.OrderStatus) error
 	GetOrderByID(ctx context.Context, orderID uuid.UUID, preload bool) (*models.Order, error)
+	GetOrderPerMonth(ctx context.Context, restaurantID uuid.UUID, orderStatus *models.OrderStatus) ([]models.OrderPerMonth, error)
 }
 
 type orderRepository struct {
@@ -111,4 +112,26 @@ func (o *orderRepository) GetOrderByID(ctx context.Context, orderID uuid.UUID, p
 	}
 
 	return &order, nil
+}
+
+func (o *orderRepository) GetOrderPerMonth(ctx context.Context, restaurantID uuid.UUID, orderStatus *models.OrderStatus) ([]models.OrderPerMonth, error) {
+	var orderPerMonth []models.OrderPerMonth
+	query := o.DB.WithContext(ctx).
+		Model(&models.Order{}).
+		Select("DATE_FORMAT(Orders.CreatedAt, '%Y-%m') as MonthWithYear, COUNT(Orders.ID) as Amount").
+		Where("Orders.RestaurantID = ?", restaurantID).
+		Group("MonthWithYear")
+
+	if orderStatus != nil {
+		query = query.Where("Orders.Status = ?", *orderStatus)
+	}
+
+	if err := query.Scan(&orderPerMonth).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return orderPerMonth, nil
 }

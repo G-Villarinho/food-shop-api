@@ -64,6 +64,36 @@ func (_m *OrderRepository) GetOrderByID(ctx context.Context, orderID uuid.UUID, 
 	return r0, r1
 }
 
+// GetOrderPerMonth provides a mock function with given fields: ctx, restaurantID, orderStatus
+func (_m *OrderRepository) GetOrderPerMonth(ctx context.Context, restaurantID uuid.UUID, orderStatus *models.OrderStatus) ([]models.OrderPerMonth, error) {
+	ret := _m.Called(ctx, restaurantID, orderStatus)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetOrderPerMonth")
+	}
+
+	var r0 []models.OrderPerMonth
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.OrderStatus) ([]models.OrderPerMonth, error)); ok {
+		return rf(ctx, restaurantID, orderStatus)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.OrderStatus) []models.OrderPerMonth); ok {
+		r0 = rf(ctx, restaurantID, orderStatus)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.OrderPerMonth)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID, *models.OrderStatus) error); ok {
+		r1 = rf(ctx, restaurantID, orderStatus)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetPaginatedOrdersByRestaurantID provides a mock function with given fields: ctx, restaurantID, pagination
 func (_m *OrderRepository) GetPaginatedOrdersByRestaurantID(ctx context.Context, restaurantID uuid.UUID, pagination *models.OrderPagination) (*models.PaginatedResponse[models.Order], error) {
 	ret := _m.Called(ctx, restaurantID, pagination)

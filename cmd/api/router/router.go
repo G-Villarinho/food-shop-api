@@ -13,4 +13,5 @@ func SetupRoutes(e *echo.Echo, di *internal.Di) {
 	setupProductRoutes(e, di)
 	setupEvaluationRoutes(e, di)
 	setupMenuRoutes(e, di)
+	setupMetricsRouter(e, di)
 }
