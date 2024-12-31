@@ -13,7 +13,7 @@ import (
 func setupRestaurantRoutes(e *echo.Echo, di *internal.Di) {
 	restaurantHandler, err := internal.Invoke[handler.RestaurantHandler](di)
 	if err != nil {
-		log.Fatal("error to create user handler: ", err)
+		log.Fatal("error to create auth handler: ", err)
 	}
 
 	group := e.Group("/v1/restaurants")

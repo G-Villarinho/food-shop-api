@@ -13,7 +13,7 @@ import (
 func setupOrderRoutes(e *echo.Echo, di *internal.Di) {
 	orderHandler, err := internal.Invoke[handler.OrderHandler](di)
 	if err != nil {
-		log.Fatal("error to create user handler: ", err)
+		log.Fatal("error to create auth handler: ", err)
 	}
 
 	group := e.Group("/v1/orders", middleware.EnsureAuthenticated(di))

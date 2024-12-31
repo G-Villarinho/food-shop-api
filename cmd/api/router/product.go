@@ -12,7 +12,7 @@ import (
 func setupProductRoutes(e *echo.Echo, di *internal.Di) {
 	productHandler, err := internal.Invoke[handler.ProductHandler](di)
 	if err != nil {
-		log.Fatal("error to create user handler: ", err)
+		log.Fatal("error to create auth handler: ", err)
 	}
 
 	group := e.Group("/v1/products", middleware.EnsureAuthenticated(di))

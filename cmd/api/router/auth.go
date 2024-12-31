@@ -11,7 +11,7 @@ import (
 func setupAuthRoutes(e *echo.Echo, di *internal.Di) {
 	authHandler, err := internal.Invoke[handler.AuthHandler](di)
 	if err != nil {
-		log.Fatal("error to create user handler: ", err)
+		log.Fatal("error to create auth handler: ", err)
 	}
 
 	group := e.Group("/v1/auth")
