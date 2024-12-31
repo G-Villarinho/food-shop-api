@@ -78,6 +78,10 @@ func (p *productService) CreateProduct(ctx context.Context, payload *models.Crea
 }
 
 func (p *productService) CreateProducts(ctx context.Context, payload []models.CreateOrUpdateProductPayload) error {
+	if len(payload) == 0 {
+		return nil
+	}
+
 	var products []models.Product
 	for _, product := range payload {
 		products = append(products, *product.ToProduct())
