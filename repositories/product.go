@@ -17,7 +17,10 @@ type ProductRepository interface {
 	GetProductsByRestaurantID(ctx context.Context, restaurantID uuid.UUID) ([]models.Product, error)
 	GetProductsByIDsAndRestaurantID(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) ([]models.Product, error)
 	GetPopularProducts(ctx context.Context, restaurantID uuid.UUID, limit int) ([]models.PopularProduct, error)
-	DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error
+	DeleteRange(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error
+	CreateRange(ctx context.Context, products []models.Product) error
+	UpdateRange(ctx context.Context, products []models.Product) error
+	GetProductsByIds(ctx context.Context, productIDs []uuid.UUID) ([]models.Product, error)
 }
 
 type productRepository struct {
@@ -94,11 +97,40 @@ func (p *productRepository) GetPopularProducts(ctx context.Context, restaurantID
 	return popularProducts, nil
 }
 
-func (p *productRepository) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+func (p *productRepository) DeleteRange(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
 	if err := p.DB.WithContext(ctx).Where("RestaurantID = ? AND Id IN (?)", restaurantID, productIDs).
 		Delete(&models.Product{}).Error; err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (p *productRepository) CreateRange(ctx context.Context, products []models.Product) error {
+	if err := p.DB.WithContext(ctx).Create(&products).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *productRepository) UpdateRange(ctx context.Context, products []models.Product) error {
+	if err := p.DB.WithContext(ctx).Save(&products).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *productRepository) GetProductsByIds(ctx context.Context, productIDs []uuid.UUID) ([]models.Product, error) {
+	var products []models.Product
+	if err := p.DB.WithContext(ctx).Where("Id IN (?)", productIDs).Find(&products).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return products, nil
 }

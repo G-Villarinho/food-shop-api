@@ -14,8 +14,9 @@ import (
 type ProductService interface {
 	GetPopularProducts(ctx context.Context) ([]models.PopularProductResponse, error)
 	CreateProduct(ctx context.Context, payload *models.CreateOrUpdateProductPayload) (*models.Product, error)
-	UpdateProduct(ctx context.Context, payload *models.CreateOrUpdateProductPayload) (*models.Product, error)
-	DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error
+	CreateProducts(ctx context.Context, payload []models.CreateOrUpdateProductPayload) error
+	UpdateProducts(ctx context.Context, payload []models.CreateOrUpdateProductPayload) error
+	DeleteProducts(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error
 }
 
 type productService struct {
@@ -76,12 +77,51 @@ func (p *productService) CreateProduct(ctx context.Context, payload *models.Crea
 	return product, nil
 }
 
-func (p *productService) UpdateProduct(ctx context.Context, payload *models.CreateOrUpdateProductPayload) (*models.Product, error) {
-	panic("unimplemented")
+func (p *productService) CreateProducts(ctx context.Context, payload []models.CreateOrUpdateProductPayload) error {
+	var products []models.Product
+	for _, product := range payload {
+		products = append(products, *product.ToProduct())
+	}
+
+	if err := p.popularProductRepository.CreateRange(ctx, products); err != nil {
+		return fmt.Errorf("create many products: %w", err)
+	}
+
+	return nil
 }
 
-func (p *productService) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
-	if err := p.popularProductRepository.DeleteMany(ctx, productIDs, restaurantID); err != nil {
+func (p *productService) UpdateProducts(ctx context.Context, payload []models.CreateOrUpdateProductPayload) error {
+	if len(payload) == 0 {
+		return nil
+	}
+
+	var updatedProducts = make(map[uuid.UUID]models.CreateOrUpdateProductPayload)
+	var productsIds []uuid.UUID
+	for _, product := range payload {
+		productsIds = append(productsIds, *product.Id)
+		updatedProducts[*product.Id] = product
+	}
+
+	products, err := p.popularProductRepository.GetProductsByIds(ctx, productsIds)
+	if err != nil {
+		return fmt.Errorf("get products by ids: %w", err)
+	}
+
+	for _, product := range products {
+		if updatedProduct, ok := updatedProducts[product.ID]; ok {
+			product.ApplyUpdatePayload(&updatedProduct)
+		}
+	}
+
+	if err := p.popularProductRepository.UpdateRange(ctx, products); err != nil {
+		return fmt.Errorf("update many products: %w", err)
+	}
+
+	return nil
+}
+
+func (p *productService) DeleteProducts(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+	if err := p.popularProductRepository.DeleteRange(ctx, productIDs, restaurantID); err != nil {
 		return fmt.Errorf("delete many products: %w", err)
 	}
 

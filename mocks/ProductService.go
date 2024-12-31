@@ -46,12 +46,12 @@ func (_m *ProductService) CreateProduct(ctx context.Context, payload *models.Cre
 	return r0, r1
 }
 
-// DeleteMany provides a mock function with given fields: ctx, productIDs, restaurantID
-func (_m *ProductService) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+// DeleteProducts provides a mock function with given fields: ctx, productIDs, restaurantID
+func (_m *ProductService) DeleteProducts(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
 	ret := _m.Called(ctx, productIDs, restaurantID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for DeleteMany")
+		panic("no return value specified for DeleteProducts")
 	}
 
 	var r0 error

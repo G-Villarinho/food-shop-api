@@ -36,35 +36,31 @@ func (m *menuService) UpdateMenu(ctx context.Context, payload *models.UpdateMenu
 	}
 
 	if len(payload.DeletedProductIDs) > 0 {
-		if err := m.productService.DeleteMany(ctx, payload.DeletedProductIDs, *restaurantID); err != nil {
+		if err := m.productService.DeleteProducts(ctx, payload.DeletedProductIDs, *restaurantID); err != nil {
 			return err
 		}
 	}
 
-	var updatedProducts []*models.CreateOrUpdateProductPayload
+	var updatedProducts []models.CreateOrUpdateProductPayload
 	for _, product := range payload.Products {
 		if product.Id != nil {
-			updatedProducts = append(updatedProducts, &product)
+			updatedProducts = append(updatedProducts, product)
 		}
 	}
 
-	for _, product := range updatedProducts {
-		if _, err := m.productService.UpdateProduct(ctx, product); err != nil {
-			return err
-		}
+	if err := m.productService.UpdateProducts(ctx, updatedProducts); err != nil {
+		return err
 	}
 
-	var newProducts []*models.CreateOrUpdateProductPayload
+	var newProducts []models.CreateOrUpdateProductPayload
 	for _, product := range payload.Products {
 		if product.Id == nil {
-			newProducts = append(newProducts, &product)
+			newProducts = append(newProducts, product)
 		}
 	}
 
-	for _, product := range newProducts {
-		if _, err := m.productService.CreateProduct(ctx, product); err != nil {
-			return err
-		}
+	if err := m.productService.CreateProducts(ctx, newProducts); err != nil {
+		return err
 	}
 
 	return nil

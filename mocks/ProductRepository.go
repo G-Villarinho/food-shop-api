@@ -34,12 +34,30 @@ func (_m *ProductRepository) CreateProduct(ctx context.Context, product models.P
 	return r0
 }
 
-// DeleteMany provides a mock function with given fields: ctx, productIDs, restaurantID
-func (_m *ProductRepository) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+// CreateRange provides a mock function with given fields: ctx, products
+func (_m *ProductRepository) CreateRange(ctx context.Context, products []models.Product) error {
+	ret := _m.Called(ctx, products)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateRange")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []models.Product) error); ok {
+		r0 = rf(ctx, products)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DeleteRange provides a mock function with given fields: ctx, productIDs, restaurantID
+func (_m *ProductRepository) DeleteRange(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
 	ret := _m.Called(ctx, productIDs, restaurantID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for DeleteMany")
+		panic("no return value specified for DeleteRange")
 	}
 
 	var r0 error
@@ -142,6 +160,36 @@ func (_m *ProductRepository) GetProductsByIDsAndRestaurantID(ctx context.Context
 	return r0, r1
 }
 
+// GetProductsByIds provides a mock function with given fields: ctx, productIDs
+func (_m *ProductRepository) GetProductsByIds(ctx context.Context, productIDs []uuid.UUID) ([]models.Product, error) {
+	ret := _m.Called(ctx, productIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProductsByIds")
+	}
+
+	var r0 []models.Product
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, []uuid.UUID) ([]models.Product, error)); ok {
+		return rf(ctx, productIDs)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, []uuid.UUID) []models.Product); ok {
+		r0 = rf(ctx, productIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.Product)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = rf(ctx, productIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetProductsByRestaurantID provides a mock function with given fields: ctx, restaurantID
 func (_m *ProductRepository) GetProductsByRestaurantID(ctx context.Context, restaurantID uuid.UUID) ([]models.Product, error) {
 	ret := _m.Called(ctx, restaurantID)
@@ -170,6 +218,24 @@ func (_m *ProductRepository) GetProductsByRestaurantID(ctx context.Context, rest
 	}
 
 	return r0, r1
+}
+
+// UpdateRange provides a mock function with given fields: ctx, products
+func (_m *ProductRepository) UpdateRange(ctx context.Context, products []models.Product) error {
+	ret := _m.Called(ctx, products)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateRange")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []models.Product) error); ok {
+		r0 = rf(ctx, products)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // NewProductRepository creates a new instance of ProductRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
