@@ -34,6 +34,24 @@ func (_m *ProductRepository) CreateProduct(ctx context.Context, product models.P
 	return r0
 }
 
+// DeleteMany provides a mock function with given fields: ctx, productIDs, restaurantID
+func (_m *ProductRepository) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+	ret := _m.Called(ctx, productIDs, restaurantID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteMany")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []uuid.UUID, uuid.UUID) error); ok {
+		r0 = rf(ctx, productIDs, restaurantID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetPopularProducts provides a mock function with given fields: ctx, restaurantID, limit
 func (_m *ProductRepository) GetPopularProducts(ctx context.Context, restaurantID uuid.UUID, limit int) ([]models.PopularProduct, error) {
 	ret := _m.Called(ctx, restaurantID, limit)

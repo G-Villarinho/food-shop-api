@@ -17,6 +17,7 @@ type ProductRepository interface {
 	GetProductsByRestaurantID(ctx context.Context, restaurantID uuid.UUID) ([]models.Product, error)
 	GetProductsByIDsAndRestaurantID(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) ([]models.Product, error)
 	GetPopularProducts(ctx context.Context, restaurantID uuid.UUID, limit int) ([]models.PopularProduct, error)
+	DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error
 }
 
 type productRepository struct {
@@ -91,4 +92,13 @@ func (p *productRepository) GetPopularProducts(ctx context.Context, restaurantID
 	}
 
 	return popularProducts, nil
+}
+
+func (p *productRepository) DeleteMany(ctx context.Context, productIDs []uuid.UUID, restaurantID uuid.UUID) error {
+	if err := p.DB.WithContext(ctx).Where("RestaurantID = ? AND Id IN (?)", restaurantID, productIDs).
+		Delete(&models.Product{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

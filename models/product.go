@@ -25,6 +25,18 @@ func (p *Product) TableName() string {
 	return "Products"
 }
 
+type CreateOrUpdateProductPayload struct {
+	Id          *uuid.UUID `json:"id"`
+	Name        string     `json:"name" validate:"required,min=1,max=255"`
+	Description string     `json:"description" validate:"min=1,max=400"`
+	Price       float32    `json:"price" validate:"required,min=0"`
+}
+
+type UpdateMenuPayload struct {
+	Products          []CreateOrUpdateProductPayload `json:"products" validate:"required,dive"`
+	DeletedProductIDs []uuid.UUID                    `json:"deletedProductIDs"`
+}
+
 type PopularProduct struct {
 	Name  string
 	Count int
@@ -39,5 +51,18 @@ func (p *PopularProduct) ToPopularProductResponse() *PopularProductResponse {
 	return &PopularProductResponse{
 		Name:  p.Name,
 		Count: p.Count,
+	}
+}
+
+func (coup *CreateOrUpdateProductPayload) ToProduct() *Product {
+	ID, _ := uuid.NewV7()
+
+	return &Product{
+		BaseModel: BaseModel{
+			ID: ID,
+		},
+		Name:         coup.Name,
+		Description:  sql.NullString{String: coup.Description, Valid: coup.Description != ""},
+		PriceInCents: int(coup.Price * 100),
 	}
 }
